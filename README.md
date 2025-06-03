@@ -1,6 +1,6 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
 
-# N-Bit-Serial CPU
+# 4-Bit-Serial CPU
 
 - [Read the documentation for project](docs/info.md)
 
@@ -9,6 +9,26 @@
 This project implements a compact bit-serial CPU in Verilog submitted to Tiny Tapeout, an open-source ASIC shuttle program that enables small digital designs to be fabricated on a shared silicon die. The CPU is designed to fit within a 160 x 100 μm footprint.
 
 A bit-serial CPU processes one bit of a data word at a time using minimal logic - often reusing a small ALU and control unit across clock cycles. This is in contrast to a bit-parallel CPU, which processes entire data words (e.g., 8/16/32 bits) at once.
+
+## Initial Specifications
+### TinyTapeout Signals
+| Pin Group	| Type |	Usage |
+| --------- | ---- | ------ |
+| load[3:0] |	Input	| Value to load to register |
+| regs[3:0]	| Input	| Register address |
+| opcode[3:0]	 | Bidirectional | 4-bit instruction opcode |
+| out[3:0] | Output |	Parallel output |
+| clk |	Clock |	clock input |
+| rst	| Reset |	reset FSM and registers |
+
+### Instruction Set
+| Instruction | Opcode (`opcode[3:0]`) | Function                                        |
+| ----------- | ---------------------- | ----------------------------------------------- |
+| `LOAD_A`    | `0001`                 | Load 4-bit value to Register A from `load[3:0]` |
+| `LOAD_B`    | `0010`                 | Load 4-bit value to Register B from `load[3:0]` |
+| `ADD`       | `0011`                 | Serially add A + B over 4 cycles, store in OUT  |
+| `OUTPUT`    | `0100`                 | Output contents of OUT to `out[3:0]`            |
+
 
 ## TinyTapeout User Instructions
 ### Set up your Verilog project
