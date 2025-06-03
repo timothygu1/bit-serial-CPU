@@ -21,11 +21,17 @@ A bit-serial CPU processes one bit of a data word at a time using minimal logic 
 | rst	| Reset |	reset FSM and registers |
 
 ### Instruction Set
-| Instruction | Opcode (`opcode[3:0]`) | Function                                        |
-| ----------- | ---------------------- | ----------------------------------------------- |
-| `LOAD_A`    | `0001`                 | `load[7:0]` -> A |
-| `LOAD_B`    | `0010`                 | `load[7:0]` -> B |
-| `ADD`       | `0011`                 | A + B -> `out[7:0]` |
+| Opcode | Mnemonic | Description                    |
+| ------ | -------- | ------------------------------ |
+| `0000` | `NOP`    | Do nothing                     |
+| `0001` | `LOAD_A` | Load value into A              |
+| `0010` | `LOAD_B` | Load value into B              |
+| `0011` | `ADD`    | A + B → OUT                    |
+| `0100` | `XOR`    | A ^ B → OUT                    |
+| `0101` | `AND`    | A & B → OUT                    |
+| `0110` | `SHL`    | A << 1 (bit-serial shift left) |
+| `0111` | `SHR`    | A >> 1                         |
+| `1000` | `OUTPUT` | Move result to output register |
 
 
 ## TinyTapeout User Instructions
