@@ -33,6 +33,60 @@ A bit-serial CPU processes one bit of a data word at a time using minimal logic 
 | `0111` | `SHR`    | A >> 1                         |
 | `1000` | `OUTPUT` | Move result to output register |
 
+### **Control FSM**
+
+**Purpose**: Decodes the instruction and orchestrates sequencing of steps.
+
+**Outputs**: Control signals
+
+- `load_a`, `load_b`, `shift_a, shift_b`, `shift_out`,
+- `alu_op[1:0]` (e.g., `00 = ADD`, `01 = XOR`, etc.)
+- Internal state: `IDLE`, `LOAD_A`, `LOAD_B`, `EXECUTE`, `WRITE_OUT`
+
+### **Shift Registers** (for A, B, and OUT)
+
+**Purpose**: Store and serially shift bits in/out.
+
+Functionality:
+
+- **Parallel load** (for registers A & B, to take in `load[7:0]`)
+- **Serial shift** **right**
+    - for A and B, this exposes the LSB to ALU operations
+    - for OUT, this shifts in each 1-bit result from ALU
+- **Clear/reset**
+
+**Inputs:**
+
+Data:
+
+- load[7:0] (A and B)
+- alu_result (OUT)
+
+Control signals:
+
+- load_a, load_b
+- shift_a, shift_b, shift_out
+
+### **1-Bit ALU**
+
+**Purpose**: Perform 1-bit logic/math based on A, B, and carry.
+
+Inputs:
+
+- `a_bit`, `b_bit`, `carry_in`, `alu_op[1:0]`
+
+Outputs:
+
+- `alu_result`, `carry_out` (saved in 1-bit register)
+
+### **8-Bit Counter**
+
+**Purpose**: Keeps track of how many bits have been processed.
+
+Tells FSM when to advance (after 8 bits done).
+
+### Block Diagram
+![298A Block Diagram](https://github.com/user-attachments/assets/7d24b851-e739-4c11-bbb5-0bb988386653)
 
 ## TinyTapeout User Instructions
 ### Set up your Verilog project
