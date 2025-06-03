@@ -1,6 +1,6 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
 
-# 4-Bit-Serial CPU
+# 8-Bit-Serial CPU
 
 - [Read the documentation for project](docs/info.md)
 
@@ -14,10 +14,9 @@ A bit-serial CPU processes one bit of a data word at a time using minimal logic 
 ### TinyTapeout Signals
 | Pin Group	| Type |	Usage |
 | --------- | ---- | ------ |
-| load[3:0] |	Input	| Value to load to register |
-| regs[3:0]	| Input	| Register address |
-| opcode[3:0]	 | Bidirectional | 4-bit instruction opcode |
-| out[3:0] | Output |	Parallel output |
+| load[7:0] |	Input	| Value to load to register |
+| opcode[7:0]	 | Bidirectional | 4-bit instruction opcode |
+| out[7:0] | Output |	Parallel output |
 | clk |	Clock |	clock input |
 | rst	| Reset |	reset FSM and registers |
 
