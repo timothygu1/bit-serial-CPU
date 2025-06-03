@@ -15,7 +15,7 @@ A bit-serial CPU processes one bit of a data word at a time using minimal logic 
 | Pin Group	| Type |	Usage |
 | --------- | ---- | ------ |
 | load[7:0] |	Input	| Value to load to register |
-| opcode[7:0]	 | Bidirectional | 4-bit instruction opcode |
+| opcode[3:0]	 | Bidirectional | 4-bit instruction opcode |
 | out[7:0] | Output |	Parallel output |
 | clk |	Clock |	clock input |
 | rst	| Reset |	reset FSM and registers |
@@ -23,10 +23,9 @@ A bit-serial CPU processes one bit of a data word at a time using minimal logic 
 ### Instruction Set
 | Instruction | Opcode (`opcode[3:0]`) | Function                                        |
 | ----------- | ---------------------- | ----------------------------------------------- |
-| `LOAD_A`    | `0001`                 | Load 4-bit value to Register A from `load[3:0]` |
-| `LOAD_B`    | `0010`                 | Load 4-bit value to Register B from `load[3:0]` |
-| `ADD`       | `0011`                 | Serially add A + B over 4 cycles, store in OUT  |
-| `OUTPUT`    | `0100`                 | Output contents of OUT to `out[3:0]`            |
+| `LOAD_A`    | `0001`                 | `load[7:0]` -> A |
+| `LOAD_B`    | `0010`                 | `load[7:0]` -> B |
+| `ADD`       | `0011`                 | A + B -> `out[7:0]` |
 
 
 ## TinyTapeout User Instructions
