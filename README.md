@@ -86,7 +86,8 @@ Outputs:
 Tells FSM when to advance (after 8 bits done).
 
 ### Block Diagram
-![298A Block Diagram](https://github.com/user-attachments/assets/7d24b851-e739-4c11-bbb5-0bb988386653)
+![298A Block Diagram](https://github.com/user-attachments/assets/b3a920e7-caca-4666-9459-7a705585725b)
+
 
 ## TinyTapeout User Instructions
 ### Set up your Verilog project
