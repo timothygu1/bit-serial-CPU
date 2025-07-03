@@ -21,25 +21,26 @@ module tt_um_cpu_top (
   assign uio_out = 0;
   assign uio_oe  = 0;
 
-
-  reg [15:0] instr;
+  reg [3:0] opcode;
+  reg [11:0] instr;
   reg bit_count;
 
   // parallel load instructions into instr reg
 
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin // Reset
-        instr <= 16'b0;
+        instr <= 12'b0;
         bit_count <= 0;
     end else if (uio_in[0]) begin // Load if PB is pressed
         case (bit_count) // Starting a new instruction
             0: begin
-                instr[7:0] <= ui_in;  // load LSB first
+                opcode <= ui_in[3:0];
+                instr[3:0] <= ui_in[7:4];
                 bit_count <= 1;
             end
             1: begin    // Second half of instruction
-                instr[15:8] <= ui_in; // then MSB
-                bit_count <= 2;       // loading complete
+                instr[11:4] <= ui_in; // then MSB
+                bit_count <= 0;       // loading complete
             end
         endcase
     end
