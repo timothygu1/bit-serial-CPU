@@ -23,7 +23,28 @@ module tt_um_cpu_top (
 
 
   reg [15:0] instr;
-  reg [3:0] bit_count;
+  reg bit_count;
+
+  // parallel load instructions into instr reg
+
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin // Reset
+        instr <= 16'b0;
+        bit_count <= 0;
+    end else if (uio_in[0]) begin // Load if PB is pressed
+        case (bit_count) // Starting a new instruction
+            0: begin
+                instr[7:0] <= ui_in;  // load LSB first
+                bit_count <= 1;
+            end
+            1: begin    // Second half of instruction
+                instr[15:8] <= ui_in; // then MSB
+                bit_count <= 2;       // loading complete
+            end
+        endcase
+    end
+end
+
 
   /*
   IDEAS IN PROGRESS:
@@ -40,17 +61,17 @@ module tt_um_cpu_top (
   wire btn_level = uio_in[0]; // external push button
   wire btn_edge = btn_sync1 & ~btn_prev; // detect rising edge
 
-  always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-      btn_sync0 <= 1'b1; // assume pull-up idle high
-      btn_sync1 <= 1'b1;
-      btn_prev <= 1'b1;
-    end else begin
-      btn_sync0 <= btn_level;
-      btn_sync1 <= btn_sync0;
-      btn_prev <= btn_sync1;
-    end
-  end
+  // always @(posedge clk or negedge rst_n) begin
+  //   if (!rst_n) begin
+  //     btn_sync0 <= 1'b1; // assume pull-up idle high
+  //     btn_sync1 <= 1'b1;
+  //     btn_prev <= 1'b1;
+  //   end else begin
+  //     btn_sync0 <= btn_level;
+  //     btn_sync1 <= btn_sync0;
+  //     btn_prev <= btn_sync1;
+  //   end
+  // end
 
   // FSM states
 
