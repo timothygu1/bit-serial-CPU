@@ -30,16 +30,16 @@ module tt_um_cpu_top (
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin // Reset
         instr <= 16'b0;
-        bit_count <= 0;
+        bit_count <= 1'b0;
     end else if (uio_in[0]) begin // Load if PB is pressed
         case (bit_count) // Starting a new instruction
             0: begin
                 instr[7:0] <= ui_in;  // load LSB first
-                bit_count <= 1;
+                bit_count <= 1'b1;
             end
             1: begin    // Second half of instruction
                 instr[15:8] <= ui_in; // then MSB
-                bit_count <= 2;       // loading complete
+                bit_count <= 1'b0;       // loading complete
             end
         endcase
     end
