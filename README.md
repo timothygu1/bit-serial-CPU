@@ -21,17 +21,24 @@ A bit-serial CPU processes one bit of a data word at a time using minimal logic 
 | rst	| Reset |	reset FSM and registers |
 
 ### Instruction Set
-| Opcode | Mnemonic | Description                    |
-| ------ | -------- | ------------------------------ |
-| `0000` | `NOP`    | Do nothing                     |
-| `0001` | `LOAD_A` | Load value into A              |
-| `0010` | `LOAD_B` | Load value into B              |
-| `0011` | `ADD`    | A + B → OUT                    |
-| `0100` | `XOR`    | A ^ B → OUT                    |
-| `0101` | `AND`    | A & B → OUT                    |
-| `0110` | `SHL`    | A << 1 (bit-serial shift left) |
-| `0111` | `SHR`    | A >> 1                         |
-| `1000` | `OUTPUT` | Move result to output register |
+| Opcode | Mnemonic | C Operation                    | Description |
+| ------ | -------- | ------------------------------ | ----------- |
+| `0000` | `ADDI`    | acc += imm                   | Add Immediate|
+| `0001` | `SUBI`    | acc -= imm                   | Subtract Immediate |
+| `0010` | `SLLI`      | acc = acc << imm        | Shift left Immediate      |
+| `0011` | `SRLI`      | acc = acc >> imm        | Shift right Immediate    |
+| `0100` | `ORI` | acc \|= imm             | Bitwise OR Immediate |
+| `0101` | `ANDI` | acc &= imm             | Bitwise AND Immediate |
+| `0110` | `XORI`    | acc ^= imm                    | Bitwise Exclusive OR Immediate |
+| `0111` | `LOADI`      | acc = imm        | Load immediate into accumulator    |
+| `1000` | `ADD`    | acc = rs1 + rs2                   | Add Registers |
+| `1001` | `SUB`    | acc = rs1 - rs2                   | Subtract Registers |
+| `1010` | `OR` | acc = rs1 \| rs2              | Bitwise OR Registers |
+| `1011` | `AND` | acc = rs1 & rs2              | Bitwise AND Registers |
+| `1100` | `XOR`    | acc = rs1 ^ rs2                    | Bitwise Exclusive OR Registers |
+| `1101` | `LOAD`      | acc = rs1        | Load from register into accumulator    |
+| `1110` | `STORE`      | rs1 = acc        | Store from accumulator into register    |
+
 
 ### **Control FSM**
 
