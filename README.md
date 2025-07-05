@@ -23,13 +23,13 @@ A bit-serial CPU processes one bit of a data word at a time using minimal logic 
 ### Instruction Set
 | Opcode | Mnemonic | C Operation                    | Description |
 | ------ | -------- | ------------------------------ | ----------- |
-| `0000` | `ADDI`    | acc += imm                   | Add Immediate|
-| `0001` | `SUBI`    | acc -= imm                   | Subtract Immediate |
-| `0010` | `SLLI`      | acc = acc << imm        | Shift left Immediate      |
-| `0011` | `SRLI`      | acc = acc >> imm        | Shift right Immediate    |
-| `0100` | `ORI` | acc \|= imm             | Bitwise OR Immediate |
-| `0101` | `ANDI` | acc &= imm             | Bitwise AND Immediate |
-| `0110` | `XORI`    | acc ^= imm                    | Bitwise Exclusive OR Immediate |
+| `0000` | `ADDI`    | acc = rs1 + imm                   | Add Immediate|
+| `0001` | `SUBI`    | acc = rs1 - imm                   | Subtract Immediate |
+| `0010` | `SLLI`      | acc = rs1 << imm        | Shift left Immediate      |
+| `0011` | `SRLI`      | acc = rs1 >> imm        | Shift right Immediate    |
+| `0100` | `ORI` | acc = rs1 \| imm             | Bitwise OR Immediate |
+| `0101` | `ANDI` | acc = rs1 & imm             | Bitwise AND Immediate |
+| `0110` | `XORI`    | acc = rs1 ^ imm                    | Bitwise Exclusive OR Immediate |
 | `0111` | `LOADI`      | acc = imm        | Load immediate into accumulator    |
 | `1000` | `ADD`    | acc = rs1 + rs2                   | Add Registers |
 | `1001` | `SUB`    | acc = rs1 - rs2                   | Subtract Registers |
