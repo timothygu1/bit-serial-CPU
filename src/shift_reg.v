@@ -2,7 +2,7 @@
 
 `default_nettype none
 
-module bidir_shift_reg
+module shift_reg
 #(parameter WIDTH = 8)
 (
     input  wire                  clk,

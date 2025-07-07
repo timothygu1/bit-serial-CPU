@@ -34,7 +34,7 @@ module cpu_core (
     // Instantiate A register (shift_reg)
     wire [7:0] a_parallel;
     assign a_parallel = instr[7:0]; // rs1 or imm
-    bidir_shift_reg #(8) reg_a (
+    shift_reg #(8) reg_a (
         .clk(clk),
         .rstn(rstn),
         .en(shift_a || load_a),
@@ -48,7 +48,7 @@ module cpu_core (
 
     // Instantiate B register (shift_reg)
     wire [7:0] b_parallel = {5'b0, instr[11:9]}; // rs2 in R-type (3 bits)
-    bidir_shift_reg #(8) reg_b (
+    shift_reg #(8) reg_b (
         .clk(clk),
         .rstn(rstn),
         .en(shift_b || load_b),
@@ -61,7 +61,7 @@ module cpu_core (
     );
 
     // OUT register
-    bidir_shift_reg #(8) reg_out (
+    shift_reg #(8) reg_out (
         .clk(clk),
         .rstn(rstn),
         .en(shift_out || load_out),

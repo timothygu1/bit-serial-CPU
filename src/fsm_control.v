@@ -22,16 +22,14 @@ module fsm_control (
     output reg         carry_en
 );
 
-    // FSM state declaration
-    typedef enum logic [2:0] {
-        S_IDLE,
-        S_LOAD_A,
-        S_LOAD_B,
-        S_EXECUTE,
-        S_WRITE_OUT
-    } state_t;
+    // State encoding
+    parameter S_IDLE      = 3'd0;
+    parameter S_LOAD_A    = 3'd1;
+    parameter S_LOAD_B    = 3'd2;
+    parameter S_EXECUTE   = 3'd3;
+    parameter S_WRITE_OUT = 3'd4;
 
-    state_t state, next_state;
+    reg [2:0] state, next_state;
 
     wire is_rtype = opcode[3]; // 1 = R-type, 0 = I-type
 
