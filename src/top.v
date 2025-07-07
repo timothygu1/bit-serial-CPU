@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+`include "shreg.v"
+
 `default_nettype none
 
 module tt_um_cpu_top (
@@ -23,7 +25,8 @@ module tt_um_cpu_top (
 
   reg [3:0] opcode;
   reg [11:0] instr;
-  reg bit_count;
+  enum INST_BITS {INST_LOWER = 0, INST_UPPER = 1};
+  reg next_inst_bits;
 
   // parallel load instructions into instr reg
 
@@ -31,30 +34,22 @@ module tt_um_cpu_top (
     if (!rst_n) begin // Reset
         instr <= 12'b0;
         bit_count <= 0;
+    
+    // TODO need button edge capture here? what about debouncing? 
     end else if (uio_in[0]) begin // Load if PB is pressed
         case (bit_count) // Starting a new instruction
-            0: begin
+            INST_LOWER: begin
                 opcode <= ui_in[3:0];
                 instr[3:0] <= ui_in[7:4];
                 bit_count <= 1;
             end
-            1: begin    // Second half of instruction
+            INST_UPPER: begin    // Second half of instruction
                 instr[11:4] <= ui_in; // then MSB
                 bit_count <= 0;       // loading complete
             end
         endcase
     end
 end
-
-
-  /*
-  IDEAS IN PROGRESS:
-  S_IDLE should display a status on the 7-seg display on the demo board. Perhaps a letter indicating the expected next input
-    ('L' for lower 8 bits, 'H' for upper 8 bits)
-  
-
-
-   */
 
   // Button edge-detector and synchronizer 
 
