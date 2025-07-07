@@ -88,3 +88,5 @@ module fsm_control (
         shift_b     = 0;
         shift_out   = 0;
         load_out    = 0;
+    end
+endmodule

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-`include "shreg.v"
+// `include "shreg.v"
 
 `default_nettype none
 
@@ -25,8 +25,7 @@ module tt_um_cpu_top (
 
   reg [3:0] opcode;
   reg [11:0] instr;
-  enum INST_BITS {INST_LOWER = 0, INST_UPPER = 1};
-  reg next_inst_bits;
+  reg bit_count;
 
   // parallel load instructions into instr reg
 
@@ -38,12 +37,12 @@ module tt_um_cpu_top (
     // TODO need button edge capture here? what about debouncing? 
     end else if (uio_in[0]) begin // Load if PB is pressed
         case (bit_count) // Starting a new instruction
-            INST_LOWER: begin
+            0: begin
                 opcode <= ui_in[3:0];
                 instr[3:0] <= ui_in[7:4];
                 bit_count <= 1;
             end
-            INST_UPPER: begin    // Second half of instruction
+            1: begin    // Second half of instruction
                 instr[11:4] <= ui_in; // then MSB
                 bit_count <= 0;       // loading complete
             end
@@ -71,15 +70,16 @@ end
 
   // FSM states
 
-  typedef enum logic [2:0] {
-    S_RESET, // TODO is this needed, or do we use built-in rst_n instead?
-    S_IDLE, // waiting for button press to shift in instruction bit values from DIP switches
-    S_FETCH_LO, // capture lower 8 instruction bits
-    S_FETCH_HI, // capture upper 8 instruction bits
-    S_EXECUTE // perform 
-  } state_t;
+// TODO enum not supported in verilog 
+//   typedef enum logic [2:0] {
+//     S_RESET, // TODO is this needed, or do we use built-in rst_n instead?
+//     S_IDLE, // waiting for button press to shift in instruction bit values from DIP switches
+//     S_FETCH_LO, // capture lower 8 instruction bits
+//     S_FETCH_HI, // capture upper 8 instruction bits
+//     S_EXECUTE // perform 
+//   } state_t;
 
-  state_t state, next_state;
+//   state_t state, next_state;
 
   // datapath control signals and serial wires
 

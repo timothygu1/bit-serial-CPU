@@ -1,4 +1,4 @@
-// bidir_shift_reg.v - bidirectional shift register with optional parallel load
+// shift_reg.v - bidirectional shift register with optional parallel load
 
 `default_nettype none
 
