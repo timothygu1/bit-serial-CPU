@@ -25,7 +25,7 @@ module tt_um_cpu_top (
 
     reg [3:0] opcode;
     reg [11:0] instr;
-    reg bit_count;
+    reg inst_done;
 
     // parallel load instructions into instr reg
 
@@ -33,16 +33,16 @@ module tt_um_cpu_top (
         if (!rst_n) begin // Reset
             opcode      <= 4'b0;
             instr       <= 12'b0;
-            bit_count   <= 0;
+            inst_done   <= 0;
         end
         else if (btn_edge) begin // Load if PB is pressed
-            if (!bit_count) begin
+            if (!inst_done) begin
                 opcode       <= ui_in[3:0];
                 instr[3:0]   <= ui_in[7:4];
-                bit_count    <= 1'b1;
+                inst_done    <= 1'b1;
             end else begin
                 instr[11:4]  <= ui_in;
-                bit_count    <= 1'b0;
+                inst_done    <= 1'b0;
             end
         end
     end
@@ -73,33 +73,12 @@ module tt_um_cpu_top (
         .opcode(opcode),
         .instr(instr),
         .btn_edge(btn_edge),
+        .inst_done(inst_done),
         .out(out_result)
     );
     assign uo_out  = out_result;
     assign uio_out = 8'b0;
     assign uio_oe  = 8'b0;
-
-    
-
-
-
-
-
-
-
-
-    // FSM states
-
-    // TODO enum not supported in verilog 
-    //   typedef enum logic [2:0] {
-    //     S_RESET, // TODO is this needed, or do we use built-in rst_n instead?
-    //     S_IDLE, // waiting for button press to shift in instruction bit values from DIP switches
-    //     S_FETCH_LO, // capture lower 8 instruction bits
-    //     S_FETCH_HI, // capture upper 8 instruction bits
-    //     S_EXECUTE // perform 
-    //   } state_t;
-
-    //   state_t state, next_state;
 
     // datapath control signals and serial wires
 

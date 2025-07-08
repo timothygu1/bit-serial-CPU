@@ -1,0 +1,43 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Tue Jul  8 16:01:37 2025
+[*]
+[dumpfile] "/workspaces/bit-serial-CPU/test/tb.vcd"
+[dumpfile_mtime] "Tue Jul  8 15:50:02 2025"
+[dumpfile_size] 4773
+[savefile] "/workspaces/bit-serial-CPU/test/test.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-27.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[treeopen] tb.user_project.
+[treeopen] tb.user_project.u_cpu_core.
+[sst_width] 214
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 151
+@22
+tb.ui_in[7:0]
+tb.uio_in[7:0]
+@28
+tb.clk
+tb.rst_n
+tb.user_project.inst_done
+@22
+tb.user_project.instr[11:0]
+tb.user_project.opcode[3:0]
+@28
+tb.user_project.u_cpu_core.ctrl.alu_op[1:0]
+tb.user_project.u_cpu_core.ctrl.carry_en
+@22
+tb.user_project.u_cpu_core.ctrl.imm[6:0]
+@28
+tb.user_project.u_cpu_core.ctrl.is_rtype
+tb.user_project.u_cpu_core.ctrl.next_state[2:0]
+tb.user_project.u_cpu_core.ctrl.state[2:0]
+tb.user_project.u_cpu_core.ctrl.rs1[2:0]
+@29
+tb.user_project.u_cpu_core.ctrl.rs2[2:0]
+[pattern_trace] 1
+[pattern_trace] 0

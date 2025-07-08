@@ -7,6 +7,7 @@ module fsm_control (
     input  wire        rstn,
     input  wire [3:0]  opcode,     // from top.v
     input  wire [11:0] instr,      // bits 15:4
+    input  wire        inst_done,  // full instruction loaded from top.v
     input  wire        btn_edge,   // one-pulse from top.v
     input  wire        bit_done,   // from counter.v
 
@@ -64,7 +65,7 @@ module fsm_control (
         next_state = state;
         case (state)
             S_IDLE:
-                if (btn_edge)
+                if (btn_edge && inst_done)
                     next_state = S_READ_RS1;
 
             S_READ_RS1:
