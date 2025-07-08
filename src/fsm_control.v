@@ -10,28 +10,34 @@ module fsm_control (
     input  wire        btn_edge,   // one-pulse from top.v
     input  wire        bit_done,   // from counter.v
 
-    output reg         load_a,
-    output reg         load_b,
-    output reg         shift_a,
-    output reg         shift_b,
-    output reg         shift_out,
+    output reg         reg_read_en, 
+    output reg         reg_shift_en,
+    output reg  [2:0]  reg_addr_sel,
+    output reg         reg_write_en,
+    output reg         acc_write_en,
+    output reg         acc_shift_en,
+    output reg         imm_shift_en,
     output reg  [1:0]  alu_op,
     output reg         clr_counter,
     output reg         en_counter,
-    output reg         load_out,
     output reg         carry_en
 );
 
     // State encoding
     parameter S_IDLE      = 3'd0;
-    parameter S_LOAD_A    = 3'd1;
-    parameter S_LOAD_B    = 3'd2;
-    parameter S_EXECUTE   = 3'd3;
-    parameter S_WRITE_OUT = 3'd4;
+    parameter S_READ_RS1    = 3'd1;
+    parameter S_READ_RS2    = 3'd2;
+    parameter S_SHIFT_IMM   = 3'd3;
+    parameter S_EXECUTE   = 3'd4;
+    parameter S_WRITE_ACC = 3'd5;
 
     reg [2:0] state, next_state;
 
     wire is_rtype = opcode[3]; // 1 = R-type, 0 = I-type
+
+    wire [2:0] rs1 = instr[6:4];
+    wire [2:0] rs2 = is_rtype ? instr[11:9] : 3'b000; // only relevant for R-type
+    wire [6:0] imm = is_rtype ? 7'b0000000 : instr[15:9]; // only relevant for I-type
 
     // ALU opcode decoder
     function [1:0] decode_alu_op(input [3:0] opc);
@@ -59,19 +65,23 @@ module fsm_control (
         case (state)
             S_IDLE:
                 if (btn_edge)
-                    next_state = S_LOAD_A;
+                    next_state = S_READ_RS1;
 
-            S_LOAD_A:
-                next_state = is_rtype ? S_LOAD_B : S_EXECUTE;
+            S_READ_RS1:
+                next_state = is_rtype ? S_READ_RS2 : S_SHIFT_IMM;
 
-            S_LOAD_B:
+            S_READ_RS2:
                 next_state = S_EXECUTE;
+
+            S_SHIFT_IMM:
+                if (bit_done)
+                    next_state = S_EXECUTE;
 
             S_EXECUTE:
                 if (bit_done)
-                    next_state = S_WRITE_OUT;
+                    next_state = S_WRITE_ACC;
 
-            S_WRITE_OUT:
+            S_WRITE_ACC:
                 if (bit_done)
                     next_state = S_IDLE;
         endcase
@@ -80,11 +90,54 @@ module fsm_control (
     // Outputs
     always @(*) begin
         // Default: deassert everything
-        load_a      = 0;
-        load_b      = 0;
-        shift_a     = 0;
-        shift_b     = 0;
-        shift_out   = 0;
-        load_out    = 0;
+        reg_read_en     = 0; 
+        reg_shift_en    = 0;
+        reg_addr_sel    = 3'b000;
+        reg_write_en    = 0;
+        acc_write_en    = 0;
+        acc_shift_en    = 0;
+        imm_shift_en    = 0;
+        alu_op          = 2'b00;
+        clr_counter     = 0;
+        en_counter      = 0;
+        carry_en        = 0;
+        
+        case (state)
+            S_IDLE: begin
+                clr_counter = 1;
+            end
+
+            S_READ_RS1: begin
+                reg_addr_sel = rs1;
+                reg_read_en  = 1;
+                en_counter   = 1;
+                carry_en     = 1;
+            end
+
+            S_READ_RS2: begin
+                reg_addr_sel = rs2;
+                reg_read_en  = 1;
+                en_counter   = 1;
+                carry_en     = 1;
+            end
+
+            S_SHIFT_IMM: begin
+                imm_shift_en = 1;
+                en_counter   = 1;
+                carry_en     = 1;
+            end
+
+            S_EXECUTE: begin
+                alu_op       = decode_alu_op(opcode);
+                en_counter   = 1;
+                carry_en     = 1;
+            end
+
+            S_WRITE_ACC: begin
+                acc_write_en = 1;
+                acc_shift_en = 1;
+                en_counter   = 1;
+            end
+        endcase
     end
 endmodule
