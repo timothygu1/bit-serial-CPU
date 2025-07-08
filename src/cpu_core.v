@@ -4,7 +4,7 @@
 
 module cpu_core (
     input  wire        clk,
-    input  wire        rstn,
+    input  wire        rst_n,
     input  wire [3:0]  opcode,
     input  wire [11:0] instr,
     input  wire        inst_done,
@@ -14,12 +14,10 @@ module cpu_core (
 
     // Wires between modules
     wire rs1_bit, rs2_bit, alu_result;
-    wire rs1_addr, rs2_addr;
     wire [1:0] alu_op;
     wire carry_in, carry_out;
 
     wire reg_shift_en, acc_shift_en;
-    wire [2:0] reg_addr_sel;
     wire reg_write_en, acc_write_en;
     wire en_counter, clr_counter;
     wire bit_done;
@@ -28,8 +26,8 @@ module cpu_core (
 
     // Carry register
     reg carry;
-    always @(posedge clk)
-        if (!rstn)
+    always @(posedge clk or negedge rst_n)
+        if (!rst_n)
             carry <= 0;
         else if (carry_en)
             carry <= 0;
@@ -39,7 +37,7 @@ module cpu_core (
     // TODO: REGFILE
     regfile_serial regfile (
         .clk(clk),
-        .rstn(rstn),
+        .rstn(rst_n),
         .reg_shift_en(reg_shift_en),
         .instr(instr),
         .is_rtype(opcode[3]),
@@ -52,7 +50,7 @@ module cpu_core (
     // Accumulator register
     shift_reg #(8) acc (
         .clk(clk),
-        .rstn(rstn),
+        .rstn(rst_n),
         .en(acc_shift_en || acc_write_en),
         .load(acc_write_en),
         .dir(1'b1),
@@ -75,7 +73,7 @@ module cpu_core (
     // Counter
     counter exec_counter (
         .clk(clk),
-        .rstn(rstn),
+        .rstn(rst_n),
         .en(en_counter),
         .clr(clr_counter),
         .done(bit_done),
@@ -85,9 +83,8 @@ module cpu_core (
     // Control FSM
     fsm_control ctrl (
         .clk(clk),
-        .rstn(rstn),
+        .rstn(rst_n),
         .opcode(opcode),
-        .instr(instr),
         .inst_done(inst_done),
         .btn_edge(btn_edge),
         .bit_done(bit_done),
@@ -98,4 +95,5 @@ module cpu_core (
         .carry_en(carry_en)
     );
 
+    wire _unused = &{carry_in, acc_shift_en, 1'b0, reg_write_en, acc_write_en};
 endmodule

@@ -6,13 +6,11 @@ module fsm_control (
     input  wire        clk,
     input  wire        rstn,
     input  wire [3:0]  opcode,     // from top.v
-    input  wire [11:0] instr,      // bits 15:4
     input  wire        inst_done,  // full instruction loaded from top.v
     input  wire        btn_edge,   // one-pulse from top.v
     input  wire        bit_done,   // from counter.v
 
     output reg         reg_shift_en,
-    output reg  [2:0]  reg_addr_sel,
     output reg         reg_write_en,
     output reg         acc_write_en,
     output reg         acc_shift_en,
@@ -20,9 +18,7 @@ module fsm_control (
     output reg  [1:0]  alu_op,
     output reg         clr_counter,
     output reg         en_counter,
-    output reg         carry_en,
-    output wire [2:0]  rs1,
-    output wire [2:0]  rs2
+    output reg         carry_en
 );
 
     // State encoding
@@ -34,7 +30,7 @@ module fsm_control (
 
     wire is_rtype = opcode[3]; // 1 = R-type, 0 = I-type
 
-    wire [7:0] imm = is_rtype ? 8'b00000000 : instr[11:4]; // only relevant for I-type
+    //wire [7:0] imm = is_rtype ? 8'b00000000 : instr[11:4]; // only relevant for I-type
 
     // ALU opcode decoder
     function [1:0] decode_alu_op(input [3:0] opc);
@@ -78,8 +74,6 @@ module fsm_control (
     always @(*) begin
         // Default: deassert everything
         reg_shift_en    = 0;
-        // rs1             = 3'b000;
-        // rs2             = 3'b000;
         reg_write_en    = 0;
         acc_write_en    = 0;
         acc_shift_en    = 0;
@@ -108,4 +102,7 @@ module fsm_control (
             end
         endcase
     end
+
+    wire _unused = &{reg_write_en, acc_shift_en, acc_write_en, imm_shift_en};
+
 endmodule

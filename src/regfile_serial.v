@@ -48,4 +48,6 @@ module regfile_serial #(
     //     end
     // end
 
+   // wire _unused = &{ena, clk, rst_n, 1'b0};
+
 endmodule

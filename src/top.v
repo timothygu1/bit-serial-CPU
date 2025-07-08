@@ -69,7 +69,7 @@ module tt_um_cpu_top (
     // CPU core 
     cpu_core u_cpu_core (
         .clk(clk),
-        .rstn(rst_n),
+        .rst_n(rst_n),
         .opcode(opcode),
         .instr(instr),
         .btn_edge(btn_edge),
@@ -79,13 +79,6 @@ module tt_um_cpu_top (
     assign uo_out  = out_result;
     assign uio_out = 8'b0;
     assign uio_oe  = 8'b0;
-
-    // datapath control signals and serial wires
-
-    reg le; // load enable for shift registers 
-    reg ae; // accumulate enable for ALU
-    wire serial_in; // single bit serial input into ALU
-    wire serial_out; // single bit serial output from ALU
 
     // List all unused inputs to prevent warnings
     wire _unused = &{ena, clk, rst_n, 1'b0};
