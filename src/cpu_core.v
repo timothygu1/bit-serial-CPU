@@ -36,6 +36,9 @@ module cpu_core (
             carry <= carry_out;
 
     // TODO: REGFILE
+    regfile regFile (
+
+    );
 
     // Accumulator register
     shift_reg #(8) acc (
@@ -52,8 +55,8 @@ module cpu_core (
 
     // ALU
     alu_1bit alu (
-        .a(a_bit),
-        .b(b_bit),
+        .rs1(a_bit),
+        .rs2(b_bit),
         .carry_in(carry),
         .alu_op(alu_op),
         .result(alu_result),

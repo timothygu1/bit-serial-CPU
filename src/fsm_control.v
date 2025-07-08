@@ -36,9 +36,9 @@ module fsm_control (
 
     wire is_rtype = opcode[3]; // 1 = R-type, 0 = I-type
 
-    wire [2:0] rs1 = instr[6:4];
-    wire [2:0] rs2 = is_rtype ? instr[11:9] : 3'b000; // only relevant for R-type
-    wire [6:0] imm = is_rtype ? 7'b0000000 : instr[15:9]; // only relevant for I-type
+    wire [2:0] rs1 = instr[3:0];
+    wire [2:0] rs2 = is_rtype ? instr[6:4] : 3'b000; // only relevant for R-type
+    wire [6:0] imm = is_rtype ? 7'b0000000 : instr[11:4]; // only relevant for I-type
 
     // ALU opcode decoder
     function [1:0] decode_alu_op(input [3:0] opc);

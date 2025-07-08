@@ -51,7 +51,7 @@ async def test_project(dut):
     # Input second 8 instruction bits
     await load_instruction(dut, 0x04)
 
-    await ClockCycles(dut.clk, 10)
+    await ClockCycles(dut.clk, 30)
 
     # The following assersion is just an example of how to check the output values.
     # Change it to match the actual expected output of your module:
