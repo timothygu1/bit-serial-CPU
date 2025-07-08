@@ -13,17 +13,17 @@ module cpu_core (
 );
 
     // Wires between modules
-    wire a_bit, b_bit, alu_result;
+    wire rs1_bit, rs2_bit, alu_result;
     wire [1:0] alu_op;
     wire carry_in, carry_out;
 
     wire reg_shift_en, acc_shift_en;
     wire [2:0] reg_addr_sel;
-    wire reg_out_bit;
     wire reg_write_en, acc_write_en;
     wire en_counter, clr_counter;
     wire bit_done;
     wire carry_en;
+    wire acc_out_bit;
 
     // Carry register
     reg carry;
@@ -36,8 +36,16 @@ module cpu_core (
             carry <= carry_out;
 
     // TODO: REGFILE
-    regfile regFile (
-
+    regfile_serial regfile (
+        .clk(clk),
+        .rstn(rstn),
+        .shift_en(shift_en),
+        .rs1_addr(rs1),
+        .rs2_addr(rs2),
+        .rs1_bit(rs1_bit),
+        .rs2_bit(rs2_bit),
+        .wr_bit(acc_out_bit),
+        .wr_en(wr_en)
     );
 
     // Accumulator register
@@ -50,13 +58,13 @@ module cpu_core (
         .serial_in(alu_result),
         .parallel_in(8'b0),
         .q(out),
-        .serial_out()
+        .serial_out(acc_out_bit)
     );
 
     // ALU
     alu_1bit alu (
-        .rs1(a_bit),
-        .rs2(b_bit),
+        .rs1(rs1_bit),
+        .rs2(rs2_bit),
         .carry_in(carry),
         .alu_op(alu_op),
         .result(alu_result),
