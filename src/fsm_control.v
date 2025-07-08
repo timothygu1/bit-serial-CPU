@@ -11,7 +11,6 @@ module fsm_control (
     input  wire        btn_edge,   // one-pulse from top.v
     input  wire        bit_done,   // from counter.v
 
-    output reg         reg_read_en, 
     output reg         reg_shift_en,
     output reg  [2:0]  reg_addr_sel,
     output reg         reg_write_en,
@@ -28,18 +27,13 @@ module fsm_control (
 
     // State encoding
     parameter S_IDLE      = 3'd0;
-    parameter S_READ_RS1    = 3'd1;
-    parameter S_READ_RS2    = 3'd2;
-    parameter S_SHIFT_IMM   = 3'd3;
-    parameter S_EXECUTE   = 3'd4;
-    parameter S_WRITE_ACC = 3'd5;
+    parameter S_EXECUTE   = 3'd1;
+    parameter S_WRITE_ACC = 3'd2;
 
     reg [2:0] state, next_state;
 
     wire is_rtype = opcode[3]; // 1 = R-type, 0 = I-type
 
-    assign rs1 = instr[2:0];
-    assign rs2 = is_rtype ? instr[6:4] : 3'b000; // only relevant for R-type
     wire [7:0] imm = is_rtype ? 8'b00000000 : instr[11:4]; // only relevant for I-type
 
     // ALU opcode decoder
@@ -83,7 +77,6 @@ module fsm_control (
     // Outputs
     always @(*) begin
         // Default: deassert everything
-        reg_read_en     = 0; 
         reg_shift_en    = 0;
         // rs1             = 3'b000;
         // rs2             = 3'b000;

@@ -34,6 +34,26 @@ async def load_instruction(dut, byte):
     await ClockCycles(dut.clk, 1)
     await pb0_press(dut)
 
+async def preload_regfile(dut, reg_values):
+    """Load each register in regfile_serial with dummy data."""
+    for reg_index, value in enumerate(reg_values):
+        dut.user_project.u_cpu_core.regfile.rs1_addr.value = reg_index
+
+        for bit_index in range(8):
+            # Write LSB first
+            dut.user_project.u_cpu_core.regfile.wr_bit.value = (value >> bit_index) & 1
+            dut.user_project.u_cpu_core.regfile.wr_en.value = 1
+            await ClockCycles(dut.clk, 1)
+
+        dut.user_project.u_cpu_core.regfile.wr_en.value = 0  # Clean up
+
+async def test_fill_regfile(dut):
+    # Fill all 8 registers with dummy data (example: 0xA0, 0xB1, etc.)
+    dummy_data = [0xA0, 0xB1, 0xC2, 0xD3, 0xE4, 0xF5, 0x16, 0x27]
+    await preload_regfile(dut, dummy_data)
+
+    dut._log.info("All registers loaded with test data")
+
 @cocotb.test()
 async def test_project(dut):
     dut._log.info("Start")
@@ -43,6 +63,8 @@ async def test_project(dut):
 
     await reset(dut)
 
+    await test_fill_regfile(dut)
+
     dut._log.info("Test project behavior")
 
     # Input first 8 instruction bits
@@ -51,7 +73,7 @@ async def test_project(dut):
     # Input second 8 instruction bits
     await load_instruction(dut, 0x04)
 
-    await ClockCycles(dut.clk, 30)
+    await ClockCycles(dut.clk, 50)
 
     # The following assersion is just an example of how to check the output values.
     # Change it to match the actual expected output of your module:
