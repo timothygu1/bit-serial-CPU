@@ -21,7 +21,9 @@ module fsm_control (
     output reg  [1:0]  alu_op,
     output reg         clr_counter,
     output reg         en_counter,
-    output reg         carry_en
+    output reg         carry_en,
+    output wire [2:0]  rs1,
+    output wire [2:0]  rs2
 );
 
     // State encoding
@@ -36,9 +38,9 @@ module fsm_control (
 
     wire is_rtype = opcode[3]; // 1 = R-type, 0 = I-type
 
-    wire [2:0] rs1 = instr[3:0];
-    wire [2:0] rs2 = is_rtype ? instr[6:4] : 3'b000; // only relevant for R-type
-    wire [6:0] imm = is_rtype ? 7'b0000000 : instr[11:4]; // only relevant for I-type
+    assign rs1 = instr[2:0];
+    assign rs2 = is_rtype ? instr[6:4] : 3'b000; // only relevant for R-type
+    wire [7:0] imm = is_rtype ? 8'b00000000 : instr[11:4]; // only relevant for I-type
 
     // ALU opcode decoder
     function [1:0] decode_alu_op(input [3:0] opc);
@@ -66,16 +68,6 @@ module fsm_control (
         case (state)
             S_IDLE:
                 if (btn_edge && inst_done)
-                    next_state = S_READ_RS1;
-
-            S_READ_RS1:
-                next_state = is_rtype ? S_READ_RS2 : S_SHIFT_IMM;
-
-            S_READ_RS2:
-                next_state = S_EXECUTE;
-
-            S_SHIFT_IMM:
-                if (bit_done)
                     next_state = S_EXECUTE;
 
             S_EXECUTE:
@@ -93,7 +85,8 @@ module fsm_control (
         // Default: deassert everything
         reg_read_en     = 0; 
         reg_shift_en    = 0;
-        reg_addr_sel    = 3'b000;
+        // rs1             = 3'b000;
+        // rs2             = 3'b000;
         reg_write_en    = 0;
         acc_write_en    = 0;
         acc_shift_en    = 0;
@@ -108,27 +101,8 @@ module fsm_control (
                 clr_counter = 1;
             end
 
-            S_READ_RS1: begin
-                reg_addr_sel = rs1;
-                reg_read_en  = 1;
-                en_counter   = 1;
-                carry_en     = 1;
-            end
-
-            S_READ_RS2: begin
-                reg_addr_sel = rs2;
-                reg_read_en  = 1;
-                en_counter   = 1;
-                carry_en     = 1;
-            end
-
-            S_SHIFT_IMM: begin
-                imm_shift_en = 1;
-                en_counter   = 1;
-                carry_en     = 1;
-            end
-
             S_EXECUTE: begin
+                reg_shift_en = 1;
                 alu_op       = decode_alu_op(opcode);
                 en_counter   = 1;
                 carry_en     = 1;

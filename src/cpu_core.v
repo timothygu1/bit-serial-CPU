@@ -14,6 +14,7 @@ module cpu_core (
 
     // Wires between modules
     wire rs1_bit, rs2_bit, alu_result;
+    wire rs1_addr, rs2_addr;
     wire [1:0] alu_op;
     wire carry_in, carry_out;
 
@@ -39,13 +40,13 @@ module cpu_core (
     regfile_serial regfile (
         .clk(clk),
         .rstn(rstn),
-        .shift_en(shift_en),
-        .rs1_addr(rs1),
-        .rs2_addr(rs2),
+        .shift_en(reg_shift_en),
+        .rs1_addr(rs1_addr),
+        .rs2_addr(rs2_addr),
         .rs1_bit(rs1_bit),
         .rs2_bit(rs2_bit),
         .wr_bit(acc_out_bit),
-        .wr_en(wr_en)
+        .wr_en(reg_write_en)
     );
 
     // Accumulator register
@@ -87,6 +88,8 @@ module cpu_core (
         .rstn(rstn),
         .opcode(opcode),
         .instr(instr),
+        .rs1(rs1_addr),
+        .rs2(rs2_addr),
         .inst_done(inst_done),
         .btn_edge(btn_edge),
         .bit_done(bit_done),
