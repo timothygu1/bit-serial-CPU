@@ -62,7 +62,6 @@ module fsm_control (
                     next_state = S_EXECUTE;
 
             S_EXECUTE:
-                if (bit_done)
                     next_state = S_WRITE_ACC;
 
             S_WRITE_ACC:
@@ -97,9 +96,11 @@ module fsm_control (
             end
 
             S_WRITE_ACC: begin
-                acc_write_en = 1;
-                acc_shift_en = 1;
+                reg_shift_en = 1;
+                alu_op       = decode_alu_op(opcode);
                 en_counter   = 1;
+                carry_en     = 1;
+                acc_write_en = 1;
             end
         endcase
     end

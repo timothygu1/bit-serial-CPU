@@ -1,4 +1,4 @@
-// shift_reg.v - bidirectional shift register with optional parallel load
+// shift_reg.v - shift register with optional parallel load
 
 `default_nettype none
 
@@ -9,27 +9,30 @@ module shift_reg
     input  wire                  rstn,        // active-low synchronous reset
     input  wire                  en,          // 1 -> perform load/shift
     input  wire                  load,        // 1 -> parallel load, 0 -> shift
-    input  wire                  dir,         // 0 -> shift left, 1 -> shift right
     input  wire                  serial_in,   // bit entering during a shift
     input  wire  [WIDTH-1:0]     parallel_in, // data for parallel load
-    output reg   [WIDTH-1:0]     q,           // register contents
-    output wire                  serial_out   // bit exiting during a shift
+    output reg   [WIDTH-1:0]     q           // register contents
 );
 
+    reg [$clog2(WIDTH)-1:0] bit_index;
+    
     // next-state datapath
     wire [WIDTH-1:0] next_q =
-        load          ? parallel_in                    : // parallel load
-        (dir == 1'b0) ? {q[WIDTH-2:0], serial_in}      : // shift left
-                        {serial_in, q[WIDTH-1:1]};       // shift right
+        load          ? parallel_in : {serial_in, q[WIDTH-1:1]};       
 
-    // sequential part
-    always @(posedge clk)
-        if (!rstn)
+     always @(posedge clk or negedge rstn) begin
+        if (!rstn) begin
             q <= {WIDTH{1'b0}};   // synchronous clear
-        else if (en)
-            q <= next_q;          // load or shift
-
-    // bit shifted out on this cycle
-    assign serial_out = dir ? q[0] : q[WIDTH-1];
+            bit_index <= 0;
+        end else if (en) begin
+            if (load) begin
+                q[WIDTH-1:0] <= parallel_in;
+                bit_index <= 0;
+            end else begin
+                q[bit_index] <= serial_in;
+                bit_index <= bit_index + 1; // increment bit index each cycle
+            end
+        end
+    end
 
 endmodule

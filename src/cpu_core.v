@@ -53,13 +53,10 @@ module cpu_core (
     shift_reg #(8) acc (
         .clk(clk),
         .rstn(rst_n),
-        .en(acc_shift_en || acc_write_en),
-        .load(acc_write_en),
-        .dir(1'b1),
+        .en(acc_write_en),
         .serial_in(alu_result),
         .parallel_in(8'b0),
-        .q(out),
-        .serial_out(acc_out_bit)
+        .q(out)
     );
 
     // ALU
@@ -91,6 +88,7 @@ module cpu_core (
         .btn_edge(btn_edge),
         .bit_done(bit_done),
         .alu_op(alu_op),
+        .acc_write_en(acc_write_en),
         .reg_shift_en(reg_shift_en),
         .reg_write_en(reg_write_en),
         .acc_write_en(acc_write_en),
@@ -101,5 +99,5 @@ module cpu_core (
         .carry_en(carry_en)
     );
 
-    wire _unused = &{carry_in, acc_shift_en, 1'b0, reg_write_en, acc_write_en};
+    wire _unused = &{carry_in, acc_shift_en, 1'b0, reg_write_en};
 endmodule

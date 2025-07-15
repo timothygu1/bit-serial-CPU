@@ -68,7 +68,7 @@ async def test_project(dut):
     dut._log.info("Test project behavior")
 
     # Input first 8 instruction bits
-    await load_instruction(dut, 0x32)
+    await load_instruction(dut, 0b00111100)
 
     # Input second 8 instruction bits
     await load_instruction(dut, 0x04)
