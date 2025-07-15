@@ -24,7 +24,8 @@ module fsm_control (
     // State encoding
     parameter S_IDLE      = 3'd0;
     parameter S_EXECUTE   = 3'd1;
-    parameter S_WRITE_ACC = 3'd2;
+    parameter S_ACC_PREP = 3'd2;
+    parameter S_WRITE_ACC = 3'd3;
 
     reg [2:0] state, next_state;
 
@@ -57,12 +58,17 @@ module fsm_control (
     always @(*) begin
         next_state = state;
         case (state)
+            default:
+                next_state = S_IDLE;
             S_IDLE:
                 if (btn_edge && inst_done)
                     next_state = S_EXECUTE;
 
             S_EXECUTE:
                     next_state = S_WRITE_ACC;
+                
+            // S_ACC_PREP:
+            //         next_state = S_WRITE_ACC;
 
             S_WRITE_ACC:
                 if (bit_done)
@@ -93,6 +99,15 @@ module fsm_control (
                 alu_op       = decode_alu_op(opcode);
                 en_counter   = 1;
                 carry_en     = 1;
+                acc_write_en = 1;
+            end
+
+            S_ACC_PREP: begin
+                reg_shift_en = 1;
+                alu_op       = decode_alu_op(opcode);
+                en_counter   = 1;
+                carry_en     = 1;
+                acc_write_en = 1;
             end
 
             S_WRITE_ACC: begin

@@ -14,6 +14,9 @@ module shift_reg
     output reg   [WIDTH-1:0]     q           // register contents
 );
 
+    // We need to delay the input from the ALU for 1 cycle before starting to write.
+    reg serial_in_d; // delay register
+    reg shift_started;
     reg [$clog2(WIDTH)-1:0] bit_index;
     
     // next-state datapath
@@ -23,16 +26,25 @@ module shift_reg
      always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             q <= {WIDTH{1'b0}};   // synchronous clear
+            serial_in_d <= 1'b0;         // also reset delay register
             bit_index <= 0;
         end else if (en) begin
+            serial_in_d <= serial_in; // delay input by one cycle for data alignment
+
             if (load) begin
-                q[WIDTH-1:0] <= parallel_in;
-                bit_index <= 0;
+            q <= parallel_in;
+            bit_index <= 0;
+            shift_started <= 0;
+        end else begin
+            if (shift_started) begin
+                q[bit_index] <= serial_in_d;
+                bit_index <= bit_index + 1;
             end else begin
-                q[bit_index] <= serial_in;
-                bit_index <= bit_index + 1; // increment bit index each cycle
+                // Don't write yet — first cycle of serial_in_d
+                shift_started <= 1;
             end
         end
     end
+end
 
 endmodule

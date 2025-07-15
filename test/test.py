@@ -73,19 +73,40 @@ async def test_project(dut):
 
     dut._log.info("Test project behavior")
 
-    # Test: XOR r3, r4
 
     await load_register(dut, 3, 0b00101101)
 
     await load_register(dut, 4, 0b01110011)
 
-    # Input first 8 instruction bits
+    # XOR r3, r4
     await load_instruction(dut, 0b00111100)
-
-    # Input second 8 instruction bits
     await load_instruction(dut, 0x04)
 
-    # expected result: accumulator is 0b01011110
+    # expected: 0x5E
+
+    await ClockCycles(dut.clk, 10)
+
+    # AND r3, r4
+    await load_instruction(dut, 0b00111011)
+    await load_instruction(dut, 0x04)
+
+    # expected: 0x21
+
+    await ClockCycles(dut.clk, 10)
+
+    # ADD r3, r4
+    await load_instruction(dut, 0b00111000)
+    await load_instruction(dut, 0x04)
+
+    await ClockCycles(dut.clk, 10)
+
+    # expected: 0xA0
+
+    # SUB r3, r4
+    await load_instruction(dut, 0b00111001)
+    await load_instruction(dut, 0x04)
+
+    # expected: 0xBA
 
     await ClockCycles(dut.clk, 50)
 
