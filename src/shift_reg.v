@@ -6,7 +6,7 @@ module shift_reg
 #(parameter WIDTH = 8)
 (
     input  wire                  clk,
-    input  wire                  rstn,        // active-low synchronous reset
+    input  wire                  rst_n,        // active-low synchronous reset
     input  wire                  en,          // 1 -> perform load/shift
     input  wire                  load,        // 1 -> parallel load, 0 -> shift
     input  wire                  serial_in,   // bit entering during a shift
@@ -20,8 +20,8 @@ module shift_reg
     wire [WIDTH-1:0] next_q =
         load          ? parallel_in : {serial_in, q[WIDTH-1:1]};       
 
-     always @(posedge clk or negedge rstn) begin
-        if (!rstn) begin
+     always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
             q <= {WIDTH{1'b0}};   // synchronous clear
             bit_index <= 0;
         end else if (en) begin

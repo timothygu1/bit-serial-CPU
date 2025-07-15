@@ -15,9 +15,10 @@ module cpu_core (
     // Wires between modules
     wire rs1_bit, rs2_bit, alu_result;
     wire [1:0] alu_op;
-    // wire carry_in, carry_out; // LINT fix: unused for now 
+    wire carry_in, carry_out; // LINT fix: unused for now 
 
     wire reg_shift_en, acc_shift_en;
+    wire imm_shift_en;
     wire reg_write_en, acc_write_en;
     wire en_counter, clr_counter;
     wire bit_done;
@@ -52,7 +53,7 @@ module cpu_core (
     // Accumulator register
     shift_reg #(8) acc (
         .clk(clk),
-        .rstn(rst_n),
+        .rst_n(rst_n),
         .en(acc_write_en),
         .serial_in(alu_result),
         .parallel_in(8'b0),
@@ -82,7 +83,7 @@ module cpu_core (
     // Control FSM
     fsm_control ctrl (
         .clk(clk),
-        .rstn(rst_n),
+        .rst_n(rst_n),
         .opcode(opcode),
         .inst_done(inst_done),
         .btn_edge(btn_edge),
@@ -91,7 +92,6 @@ module cpu_core (
         .acc_write_en(acc_write_en),
         .reg_shift_en(reg_shift_en),
         .reg_write_en(reg_write_en),
-        .acc_write_en(acc_write_en),
         .acc_shift_en(acc_shift_en),
         .imm_shift_en(imm_shift_en),
         .clr_counter(clr_counter),

@@ -37,6 +37,7 @@ module regfile_serial #(
         end else if (reg_shift_en) begin
             bit_index <= bit_index + 1; // increment bit index each cycle
         end else if (wr_en) begin
+            // todo: add parallel load
             regs[rs1_addr][bit_index] <= wr_bit;
             bit_index <= bit_index + 1;
         end
