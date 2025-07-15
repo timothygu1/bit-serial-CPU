@@ -9,7 +9,10 @@ module regfile_serial #(
     input  wire               clk,
     input  wire               rstn,
     input  wire               reg_shift_en,     // 1 bit shift per cycle when high
+    // LINT: temporary disable (to be implemented later)
+    /* verilator lint_off UNUSED */
     input  wire [11:0]        instr,
+    /* verilator lint_on UNUSED */
     input  wire               is_rtype,
     output wire               rs1_bit,
     output wire               rs2_bit,

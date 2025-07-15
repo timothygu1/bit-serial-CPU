@@ -4,7 +4,7 @@
 
 module fsm_control (
     input  wire        clk,
-    input  wire        rstn,
+    input  wire        rst_n,
     input  wire [3:0]  opcode,     // from top.v
     input  wire        inst_done,  // full instruction loaded from top.v
     input  wire        btn_edge,   // one-pulse from top.v
@@ -28,7 +28,8 @@ module fsm_control (
 
     reg [2:0] state, next_state;
 
-    wire is_rtype = opcode[3]; // 1 = R-type, 0 = I-type
+    // LINT: unused for now 
+    // wire is_rtype = opcode[3]; // 1 = R-type, 0 = I-type
 
     //wire [7:0] imm = is_rtype ? 8'b00000000 : instr[11:4]; // only relevant for I-type
 
@@ -45,8 +46,8 @@ module fsm_control (
     endfunction
 
     // FSM state register
-    always @(posedge clk or negedge rstn) begin
-        if (!rstn)
+    always @(posedge clk) begin
+        if (!rst_n)
             state <= S_IDLE;
         else
             state <= next_state;

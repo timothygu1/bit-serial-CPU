@@ -29,7 +29,7 @@ module tt_um_cpu_top (
 
     // parallel load instructions into instr reg
 
-    always @(posedge clk or negedge rst_n) begin
+    always @(posedge clk) begin
         if (!rst_n) begin // Reset
             opcode      <= 4'b0;
             instr       <= 12'b0;
@@ -53,7 +53,7 @@ module tt_um_cpu_top (
     wire btn_level = uio_in[0]; // external push button
     wire btn_edge = btn_sync1 & ~btn_prev; // detect rising edge
 
-    always @(posedge clk or negedge rst_n) begin
+    always @(posedge clk) begin
         if (!rst_n) begin
             btn_sync0       <= 1'b0;
             btn_sync1       <= 1'b0;

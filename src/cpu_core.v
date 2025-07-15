@@ -15,7 +15,7 @@ module cpu_core (
     // Wires between modules
     wire rs1_bit, rs2_bit, alu_result;
     wire [1:0] alu_op;
-    wire carry_in, carry_out;
+    // wire carry_in, carry_out; // LINT fix: unused for now 
 
     wire reg_shift_en, acc_shift_en;
     wire reg_write_en, acc_write_en;
@@ -24,9 +24,11 @@ module cpu_core (
     wire carry_en;
     wire acc_out_bit;
 
+    wire [2:0] count; // unused
+
     // Carry register
     reg carry;
-    always @(posedge clk or negedge rst_n)
+    always @(posedge clk)
         if (!rst_n)
             carry <= 0;
         else if (carry_en)
@@ -77,7 +79,7 @@ module cpu_core (
         .en(en_counter),
         .clr(clr_counter),
         .done(bit_done),
-        .count() // optional
+        .count(count) // not being used
     );
 
     // Control FSM
@@ -90,6 +92,10 @@ module cpu_core (
         .bit_done(bit_done),
         .alu_op(alu_op),
         .reg_shift_en(reg_shift_en),
+        .reg_write_en(reg_write_en),
+        .acc_write_en(acc_write_en),
+        .acc_shift_en(acc_shift_en),
+        .imm_shift_en(imm_shift_en),
         .clr_counter(clr_counter),
         .en_counter(en_counter),
         .carry_en(carry_en)
