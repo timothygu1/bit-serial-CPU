@@ -18,7 +18,6 @@ module regfile_serial #(
     output wire [7:0]         regfile_bits,
     output wire               rs1_bit,
     output wire               rs2_bit,
-    input  wire               wr_bit,
     input  wire               reg_store_en      // parallel store from accumulator
 );
 
@@ -31,7 +30,7 @@ module regfile_serial #(
 
     integer i;
 
-    always @(posedge clk or negedge rstn) begin
+    always @(posedge clk) begin
         if (!rstn) begin
             bit_index <= 0;
             for (i = 0; i < REG_COUNT; i = i + 1)

@@ -33,7 +33,6 @@ tb.user_project.u_cpu_core.ctrl.next_state[2:0]
 tb.user_project.u_cpu_core.ctrl.state[2:0]
 tb.user_project.u_cpu_core.regfile.reg_shift_en
 tb.user_project.u_cpu_core.regfile.bit_index[2:0]
-tb.user_project.u_cpu_core.regfile.wr_bit
 tb.user_project.u_cpu_core.regfile.rs1_bit
 tb.user_project.u_cpu_core.regfile.rs2_bit
 tb.user_project.u_cpu_core.regfile.rs1_addr[2:0]

@@ -18,9 +18,8 @@ module cpu_core (
 
     wire alu_start;
     wire reg_shift_en, acc_write_en;
-    wire imm_shift_en;
+    //wire imm_shift_en;
     wire reg_store_en, acc_load_en;
-    wire en_counter, clr_counter;
     wire bit_done;
     wire carry_en;
 
@@ -29,8 +28,6 @@ module cpu_core (
 
     assign acc_parallel_in = acc_load_en ? (opcode[3] ? regfile_bits : instr[11:4]) // load from regfile if R-type, otherwise use imm
                              : 8'b0; 
-
-    wire [2:0] count; // unused
 
     // TODO: REGFILE
     regfile_serial regfile (
@@ -84,7 +81,7 @@ module cpu_core (
         .acc_write_en(acc_write_en),
         .reg_shift_en(reg_shift_en),
         .reg_store_en(reg_store_en),
-        .imm_shift_en(imm_shift_en),
+        //.imm_shift_en(imm_shift_en),
         .carry_en(carry_en)
     );
 

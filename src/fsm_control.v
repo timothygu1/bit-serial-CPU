@@ -14,7 +14,7 @@ module fsm_control (
     output reg         reg_store_en,
     output reg         acc_write_en,
     output reg         acc_load_en,
-    output reg         imm_shift_en,
+    //output reg         imm_shift_en,
     output reg  [2:0]  alu_op,
     output reg         carry_en
 );
@@ -27,11 +27,6 @@ module fsm_control (
     parameter S_LOAD = 3'd4;
 
     reg [2:0] state, next_state;
-
-    // LINT: unused for now 
-    // wire is_rtype = opcode[3]; // 1 = R-type, 0 = I-type
-
-    //wire [7:0] imm = is_rtype ? 8'b00000000 : instr[11:4]; // only relevant for I-type
 
     // ALU opcode decoder
     function [2:0] decode_alu_op(input [3:0] opc);
@@ -90,7 +85,7 @@ module fsm_control (
         reg_store_en    = 0;
         acc_write_en    = 0;
         acc_load_en     = 0;
-        imm_shift_en    = 0;
+        //imm_shift_en    = 0;
         alu_op          = 3'b00;
         carry_en        = 0;
         alu_start       = 0;
@@ -126,9 +121,12 @@ module fsm_control (
                 acc_write_en = 1;
             end
 
+            default: begin
+            end
+
         endcase
     end
 
-    wire _unused = &{imm_shift_en};
+    //wire _unused = &{imm_shift_en};
 
 endmodule
