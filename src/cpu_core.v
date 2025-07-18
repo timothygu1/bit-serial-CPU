@@ -9,33 +9,28 @@ module cpu_core (
     input  wire [11:0] instr,
     input  wire        inst_done,
     input  wire        btn_edge,
-    output wire [7:0]  out
+    output wire [7:0]  acc_bits
 );
 
     // Wires between modules
     wire rs1_bit, rs2_bit, alu_result;
-    wire [1:0] alu_op;
-    wire carry_in, carry_out; // LINT fix: unused for now 
+    wire [2:0] alu_op;
 
-    wire reg_shift_en, acc_shift_en;
+    wire alu_start;
+    wire reg_shift_en, acc_write_en;
     wire imm_shift_en;
-    wire reg_write_en, acc_write_en;
+    wire reg_store_en, acc_load_en;
     wire en_counter, clr_counter;
     wire bit_done;
     wire carry_en;
-    wire acc_out_bit;
+
+    wire [7:0] acc_parallel_in;
+    wire [7:0] regfile_bits;
+
+    assign acc_parallel_in = acc_load_en ? (opcode[3] ? regfile_bits : instr[11:4]) // load from regfile if R-type, otherwise use imm
+                             : 8'b0; 
 
     wire [2:0] count; // unused
-
-    // Carry register
-    reg carry;
-    always @(posedge clk)
-        if (!rst_n)
-            carry <= 0;
-        else if (carry_en)
-            carry <= 0;
-        else
-            carry <= carry_out;
 
     // TODO: REGFILE
     regfile_serial regfile (
@@ -46,38 +41,33 @@ module cpu_core (
         .is_rtype(opcode[3]),
         .rs1_bit(rs1_bit),
         .rs2_bit(rs2_bit),
-        .wr_bit(acc_out_bit),
-        .wr_en(reg_write_en)
+        .acc_bits(acc_bits),
+        .regfile_bits(regfile_bits),
+        .reg_store_en(reg_store_en)
     );
 
     // Accumulator register
-    shift_reg #(8) acc (
+    accumulator #(8) acc (
         .clk(clk),
         .rst_n(rst_n),
-        .en(acc_write_en),
-        .serial_in(alu_result),
-        .parallel_in(8'b0),
-        .q(out)
+        .acc_load_en(acc_load_en),
+        .acc_parallel_in(acc_parallel_in),
+        .acc_write_en(acc_write_en),
+        .alu_result(alu_result),
+        .acc_bits(acc_bits),
+        .done(bit_done)
     );
 
     // ALU
     alu_1bit alu (
+        .clk(clk),
+        .rst_n(rst_n),
         .rs1(rs1_bit),
         .rs2(rs2_bit),
-        .carry_in(carry),
+        .alu_start(alu_start),
         .alu_op(alu_op),
-        .result(alu_result),
-        .carry_out(carry_out)
-    );
-
-    // Counter
-    counter exec_counter (
-        .clk(clk),
-        .rstn(rst_n),
-        .en(en_counter),
-        .clr(clr_counter),
-        .done(bit_done),
-        .count(count) // not being used
+        .alu_enable(carry_en),
+        .alu_result(alu_result)
     );
 
     // Control FSM
@@ -89,15 +79,13 @@ module cpu_core (
         .btn_edge(btn_edge),
         .bit_done(bit_done),
         .alu_op(alu_op),
+        .alu_start(alu_start),
+        .acc_load_en(acc_load_en),
         .acc_write_en(acc_write_en),
         .reg_shift_en(reg_shift_en),
-        .reg_write_en(reg_write_en),
-        .acc_shift_en(acc_shift_en),
+        .reg_store_en(reg_store_en),
         .imm_shift_en(imm_shift_en),
-        .clr_counter(clr_counter),
-        .en_counter(en_counter),
         .carry_en(carry_en)
     );
 
-    wire _unused = &{carry_in, acc_shift_en, 1'b0, reg_write_en};
 endmodule

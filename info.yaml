@@ -20,9 +20,8 @@ project:
     - "top.v"
     - "cpu_core.v"
     - "alu_1bit.v"
-    - "counter.v"
     - "fsm_control.v"
-    - "shift_reg.v"
+    - "accumulator.v"
     - "regfile_serial.v"
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.

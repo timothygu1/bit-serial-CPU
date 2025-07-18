@@ -14,10 +14,12 @@ module regfile_serial #(
     input  wire [11:0]        instr,
     /* verilator lint_on UNUSED */
     input  wire               is_rtype,
+    input  wire [7:0]         acc_bits,
+    output wire [7:0]         regfile_bits,
     output wire               rs1_bit,
     output wire               rs2_bit,
     input  wire               wr_bit,
-    input  wire               wr_en         // write current bit to RD reg
+    input  wire               reg_store_en      // parallel store from accumulator
 );
 
     wire [2:0] rs1_addr = instr[2:0];
@@ -36,21 +38,16 @@ module regfile_serial #(
             regs[i] <= 0;
         end else if (reg_shift_en) begin
             bit_index <= bit_index + 1; // increment bit index each cycle
-        end else if (wr_en) begin
-            // todo: add parallel load
-            regs[rs1_addr][bit_index] <= wr_bit;
-            bit_index <= bit_index + 1;
+        end else if (reg_store_en) begin
+            // todo: add parallel store from accumulator
+            regs[rs1_addr] <= acc_bits;
         end
     end
 
     assign rs1_bit = regs[rs1_addr][bit_index];
     assign rs2_bit = regs[rs2_addr][bit_index];
 
-    // always @(posedge clk) begin
-    //     if (wr_en) begin
-    //         regs[rs1_addr][bit_index] <= wr_bit;
-    //     end
-    // end
+    assign regfile_bits = regs[rs1_addr];
 
    // wire _unused = &{ena, clk, rst_n, 1'b0};
 
