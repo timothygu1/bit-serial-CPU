@@ -17,7 +17,7 @@ module accumulator
 
     reg [$clog2(WIDTH)-1:0] bit_index;    
 
-     always @(posedge clk or negedge rst_n) begin
+     always @(posedge clk) begin
         if (!rst_n) begin
             acc_bits <= {WIDTH{1'b0}};   // synchronous clear
             bit_index <= 0;
@@ -35,7 +35,7 @@ module accumulator
 
         // Combinational logic
         always @(*) begin
-            if (bit_index == WIDTH - 2) begin
+            if (bit_index == $clog2(WIDTH)'(WIDTH - 2)) begin
                 done = 1;
             end
             else begin

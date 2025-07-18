@@ -17,7 +17,7 @@ module alu_1bit (
     reg carry_in;
     wire inverted = ~rs2; // Inverted rs2 for subtraction
 
-    always @(posedge clk or negedge rst_n) begin
+    always @(posedge clk) begin
         if (!rst_n) begin
             carry_in <= 0;
             alu_result <= 0;
