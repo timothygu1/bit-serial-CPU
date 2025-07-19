@@ -44,16 +44,12 @@ module cpu_core (
     always @(posedge clk) begin
         if (!rst_n) begin
             bit_index_d <= 0;
+            out_result <= 0;
         end else begin
+            if (out_en) begin
+                out_result <= acc_bits;
+            end
             bit_index_d <= bit_index;
-        end
-    end
-
-    always @(*) begin
-        if (!rst_n) begin
-            out_result = 0;
-        end else if (out_en) begin
-            out_result = acc_bits;
         end
     end
 
