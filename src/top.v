@@ -79,7 +79,6 @@ module tt_um_cpu_top (
     assign uio_out = 8'b0;
     assign uio_oe  = 8'b0;
 
-    // List all unused inputs to prevent warnings
     wire _unused = &{uio_in[7:1], ena};
 
 endmodule
