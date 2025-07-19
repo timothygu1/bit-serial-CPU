@@ -13,8 +13,8 @@ module regfile_serial #(
     /* verilator lint_off UNUSED */
     input  wire [11:0]        instr,
     /* verilator lint_on UNUSED */
-    input  wire               is_rtype,
-    input  wire [7:0]         acc_bits,
+    input  wire [7:0]         regs_parallel_in,
+    output reg  [2:0]         bit_index,
     output wire [7:0]         regfile_bits,
     output wire               rs1_bit,
     output wire               rs2_bit,
@@ -22,11 +22,9 @@ module regfile_serial #(
 );
 
     wire [2:0] rs1_addr = instr[2:0];
-    wire [2:0] rs2_addr = is_rtype ? instr[6:4] : 3'b000; // only relevant for R-type
+    wire [2:0] rs2_addr = instr[6:4]; // only relevant for R-type
 
     reg [REG_WIDTH-1:0] regs [0:REG_COUNT-1];
-
-    reg [$clog2(REG_WIDTH)-1:0] bit_index;
 
     integer i;
 
@@ -37,9 +35,9 @@ module regfile_serial #(
             regs[i] <= 0;
         end else if (reg_shift_en) begin
             bit_index <= bit_index + 1; // increment bit index each cycle
-        end else if (reg_store_en) begin
+        end else if (reg_store_en & rs1_addr != 3'b0) begin // do not write to 0 register
             // todo: add parallel store from accumulator
-            regs[rs1_addr] <= acc_bits;
+            regs[rs1_addr] <= regs_parallel_in;
         end
     end
 

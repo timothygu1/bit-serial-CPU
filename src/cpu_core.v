@@ -9,36 +9,66 @@ module cpu_core (
     input  wire [11:0] instr,
     input  wire        inst_done,
     input  wire        btn_edge,
-    output wire [7:0]  acc_bits
+    output reg  [7:0]  out_result
 );
 
-    // Wires between modules
-    wire rs1_bit, rs2_bit, alu_result;
-    wire [2:0] alu_op;
+    /*     CPU Core output     */
+    wire [7:0] acc_bits;
+    wire out_en;
 
+    wire [2:0] bit_index;  // Tracks regFile bit index
+    reg [2:0] bit_index_d; // Delayed bit_index passed to accumulator
+
+    /*      ALU Operands & Signals            */
+    wire alu_bit1, alu_bit2, rs2_bit, alu_result;
+    wire [2:0] alu_op;
     wire alu_start;
+    wire alu_en;
+
+    /*      Regfile & Accumulator Control Signals     */
     wire reg_shift_en, acc_write_en;
-    //wire imm_shift_en;
     wire reg_store_en, acc_load_en;
     wire bit_done;
-    wire carry_en;
 
     wire [7:0] acc_parallel_in;
     wire [7:0] regfile_bits;
 
-    assign acc_parallel_in = acc_load_en ? (opcode[3] ? regfile_bits : instr[11:4]) // load from regfile if R-type, otherwise use imm
-                             : 8'b0; 
+    /*      R-type vs I-type Multiplexers          */
 
-    // TODO: REGFILE
+    assign acc_parallel_in = acc_load_en ? (opcode[3] ? regfile_bits : instr[11:4])
+                             : 8'b0; // Accumulator parallel 2-1 mux
+
+    assign alu_bit2 = (opcode[3]) ? rs2_bit : (instr[bit_index + 4]); // ALU 2-1 mux
+
+    // Generating delayed bit index
+    always @(posedge clk) begin
+        if (!rst_n) begin
+            bit_index_d <= 0;
+        end else begin
+            bit_index_d <= bit_index;
+        end
+    end
+
+    always @(*) begin
+        if (!rst_n) begin
+            out_result = 0;
+        end else if (out_en) begin
+            out_result = acc_bits;
+        end
+    end
+
+    /*      Module connections begin here      */
+    
+    // Addressable register file
     regfile_serial regfile (
         .clk(clk),
         .rstn(rst_n),
         .reg_shift_en(reg_shift_en),
         .instr(instr),
-        .is_rtype(opcode[3]),
-        .rs1_bit(rs1_bit),
+        .rs1_bit(alu_bit1),
         .rs2_bit(rs2_bit),
-        .acc_bits(acc_bits),
+        .regs_parallel_in(acc_bits),
+        .bit_index(bit_index),
         .regfile_bits(regfile_bits),
         .reg_store_en(reg_store_en)
     );
@@ -52,18 +82,19 @@ module cpu_core (
         .acc_write_en(acc_write_en),
         .alu_result(alu_result),
         .acc_bits(acc_bits),
+        .bit_index_d(bit_index_d),
         .done(bit_done)
     );
 
-    // ALU
+    // Bit-serial ALU
     alu_1bit alu (
         .clk(clk),
         .rst_n(rst_n),
-        .rs1(rs1_bit),
-        .rs2(rs2_bit),
+        .rs1(alu_bit1),
+        .rs2(alu_bit2),
         .alu_start(alu_start),
         .alu_op(alu_op),
-        .alu_enable(carry_en),
+        .alu_en(alu_en),
         .alu_result(alu_result)
     );
 
@@ -81,8 +112,8 @@ module cpu_core (
         .acc_write_en(acc_write_en),
         .reg_shift_en(reg_shift_en),
         .reg_store_en(reg_store_en),
-        //.imm_shift_en(imm_shift_en),
-        .carry_en(carry_en)
+        .alu_en(alu_en),
+        .out_en(out_en)
     );
 
 endmodule

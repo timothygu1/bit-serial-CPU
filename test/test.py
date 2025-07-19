@@ -3,7 +3,7 @@
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, ClockCycles
+from cocotb.triggers import RisingEdge, ClockCycles, ReadOnly
 
 
 async def clock_init(dut, useconds):
@@ -30,36 +30,34 @@ async def pb0_press(dut):
 
 async def load_instruction(dut, byte):
     # Load 8 bits of an instruction
+    await ClockCycles(dut.clk, 1)
     dut.ui_in.value = byte
     await ClockCycles(dut.clk, 1)
     await pb0_press(dut)
 
-# async def preload_regfile(dut, reg_values):
-#     """Load each register in regfile_serial with dummy data."""
-#     for reg_index, value in enumerate(reg_values):
-#         dut.user_project.u_cpu_core.regfile.rs1_addr.value = reg_index
-#         await load_register(dut, reg_index, value)
+async def get_acc(dut):
+    val = dut.user_project.u_cpu_core.acc.acc_bits.value
+    return val
 
-# async def test_fill_regfile(dut):
-#     # Fill all 8 registers with dummy data (example: 0xA0, 0xB1, etc.)
-#     dummy_data = [0xA0, 0xB1, 0xC2, 0xD3, 0xE4, 0xF5, 0x16, 0x27]
-#     await preload_regfile(dut, dummy_data)
+async def get_reg(dut, reg):
+    dut.user_project.u_cpu_core.regfile.rs1_addr.value = reg
+    await ReadOnly()
+    val = dut.user_project.u_cpu_core.regfile.regfile_bits.value
+    return val
 
-#     dut._log.info("All registers loaded with test data")
+async def assert_acc(dut, value):
+    await ClockCycles(dut.clk, 3)
+    acc_val = await get_acc(dut)
+    dut._log.info(f"Accumulator bits: {acc_val} ({acc_val.integer})")
 
-# async def load_register(dut, index, value):
-#     dut.user_project.u_cpu_core.regfile.rs1_addr.value = index
-    
-#     for bit_index in range(8):
-#             # Write LSB first
-#             dut.user_project.u_cpu_core.regfile.wr_bit.value = (value >> bit_index) & 1
-#             dut.user_project.u_cpu_core.regfile.wr_en.value = 1
-#             await ClockCycles(dut.clk, 1)
+    assert acc_val == value, f"Expected {bin(value)}, got {bin(acc_val)}"
 
-#     dut.user_project.u_cpu_core.regfile.wr_en.value = 0  # Clean up
+async def assert_reg(dut, reg, value):
+    await ClockCycles(dut.clk, 2)
+    reg_val = await get_reg(dut, reg)
+    dut._log.info(f"R{reg} bits: {reg_val} ({reg_val.integer})")
 
-#async def load_accumulator()
-
+    assert reg_val == value, f"Expected R{reg} = {bin(value)}, got {bin(reg_val)}"
 
 @cocotb.test()
 async def test_project(dut):
@@ -67,34 +65,33 @@ async def test_project(dut):
     
     # Set the clock period to 10 us (100 KHz)
     await clock_init(dut, 10)
-
     await reset(dut)
-
-    # await test_fill_regfile(dut)
-
     dut._log.info("Test project behavior")
 
-
-    # await load_register(dut, 4, 0b00101101)
-
-    # await load_register(dut, 3, 0b01110011)
-
+    
     # LOADI 0x2D
     await load_instruction(dut, 0b00000111)
     await load_instruction(dut, 0x2D)
+
+    await assert_acc(dut, 0x2D)
 
     # STORE rs4
     await load_instruction(dut, 0b01001110)
     await load_instruction(dut, 0x00)
 
+    await assert_reg(dut, 4, 0x2D)
+
     # LOADI 0x73
     await load_instruction(dut, 0b00000111)
     await load_instruction(dut, 0x73)
 
-    # STORE rs3
+    await assert_acc(dut, 0x73)
 
+    # STORE rs3
     await load_instruction(dut, 0b00111110)
     await load_instruction(dut, 0x00)
+
+    await assert_reg(dut, 3, 0x73)
 
     # r4 = 0x2D = 45
     # r3 = 0x73 = 115
@@ -103,17 +100,21 @@ async def test_project(dut):
     await load_instruction(dut, 0b00111100)
     await load_instruction(dut, 0x04)
 
-    # expected: 0x5E
-
     await ClockCycles(dut.clk, 10)
+    
+    # expected: 0x5E
+    await assert_acc(dut, 0x5E)
+
 
     # AND r3, r4
     await load_instruction(dut, 0b00111011)
     await load_instruction(dut, 0x04)
 
-    # expected: 0x21
-
     await ClockCycles(dut.clk, 10)
+
+    # expected: 0x21
+    await assert_acc(dut, 0x21)
+
 
     # ADD r3, r4
     await load_instruction(dut, 0b00111000)
@@ -122,14 +123,77 @@ async def test_project(dut):
     await ClockCycles(dut.clk, 10)
 
     # expected: 0xA0 = 160
+    await assert_acc(dut, 0xA0)
+
 
     # SUB r3, r4
     await load_instruction(dut, 0b00111001)
     await load_instruction(dut, 0x04)
+    
+    await ClockCycles(dut.clk, 10)
 
     # expected: 0x46 = 70
+    await assert_acc(dut, 0x46)
 
-    await ClockCycles(dut.clk, 50)
+    # Immediate instructions
+
+    # ADDI r0 0x11
+    await load_instruction(dut, 0b00000000)
+    await load_instruction(dut, 0x11)
+   
+    await ClockCycles(dut.clk, 10)
+
+    await assert_acc(dut, 0x11)
+
+
+    # XORI r4 0x56
+    await load_instruction(dut, 0b01000110)
+    await load_instruction(dut, 0x56)
+
+    await ClockCycles(dut.clk, 10)
+
+    # expected: 0b00101101 ^ 0b01010110 = 0b01111011 = 0x7B
+    await assert_acc(dut, 0x7B)
+
+    # SUBI r3 0x2C
+    await load_instruction(dut, 0b00110001)
+    await load_instruction(dut, 0x2C)
+
+    await ClockCycles(dut.clk, 10)
+    #expected: 0x47
+    await assert_acc(dut, 0x47)
+
+    # SWAP R3 and R4:
+
+    # LOAD R3
+    await load_instruction(dut, 0b00111101)
+    await load_instruction(dut, 0x00)
+
+    # STORE R1
+    await load_instruction(dut, 0b00011110)
+    await load_instruction(dut, 0x00)
+
+    # LOAD R4
+    await load_instruction(dut, 0b01001101)
+    await load_instruction(dut, 0x00)
+
+    # STORE R3
+    await load_instruction(dut, 0b00111110)
+    await load_instruction(dut, 0x00)
+    
+    # LOAD R1
+    await load_instruction(dut, 0b00011101)
+    await load_instruction(dut, 0x00)
+
+    # STORE R4
+    await load_instruction(dut, 0b01001110)
+    await load_instruction(dut, 0x00)
+
+    await assert_reg(dut, 3, 0x2D)
+    await assert_reg(dut, 4, 0x73)
+
+    await ClockCycles(dut.clk, 10)
+
 
     # The following assersion is just an example of how to check the output values.
     # Change it to match the actual expected output of your module:

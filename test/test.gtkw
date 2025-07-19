@@ -1,12 +1,12 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Fri Jul 18 21:32:15 2025
+[*] Sat Jul 19 22:08:43 2025
 [*]
 [dumpfile] "/workspaces/bit-serial-CPU/test/tb.vcd"
-[dumpfile_mtime] "Fri Jul 18 21:31:50 2025"
-[dumpfile_size] 12253
+[dumpfile_mtime] "Sat Jul 19 22:06:22 2025"
+[dumpfile_size] 21619
 [savefile] "/workspaces/bit-serial-CPU/test/test.gtkw"
-[timestart] 90500000
+[timestart] 30300000
 [size] 1182 600
 [pos] 297 0
 *-26.000000 727700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
@@ -28,7 +28,7 @@ tb.user_project.inst_done
 tb.user_project.instr[11:0]
 tb.user_project.opcode[3:0]
 @28
-tb.user_project.u_cpu_core.ctrl.carry_en
+tb.user_project.u_cpu_core.ctrl.alu_en
 tb.user_project.u_cpu_core.ctrl.next_state[2:0]
 tb.user_project.u_cpu_core.ctrl.state[2:0]
 tb.user_project.u_cpu_core.regfile.reg_shift_en
@@ -38,11 +38,13 @@ tb.user_project.u_cpu_core.regfile.rs2_bit
 tb.user_project.u_cpu_core.regfile.rs1_addr[2:0]
 tb.user_project.u_cpu_core.regfile.rs2_addr[2:0]
 tb.user_project.u_cpu_core.alu.alu_start
-@23
+@22
 tb.user_project.u_cpu_core.acc.acc_parallel_in[7:0]
 @28
 tb.user_project.u_cpu_core.acc.acc_load_en
-@22
+@23
 tb.user_project.u_cpu_core.acc.acc_bits[7:0]
+@22
+tb.user_project.u_cpu_core.out_result[7:0]
 [pattern_trace] 1
 [pattern_trace] 0

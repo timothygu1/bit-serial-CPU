@@ -14,9 +14,9 @@ module fsm_control (
     output reg         reg_store_en,
     output reg         acc_write_en,
     output reg         acc_load_en,
-    //output reg         imm_shift_en,
     output reg  [2:0]  alu_op,
-    output reg         carry_en
+    output reg         alu_en,
+    output reg         out_en
 );
 
     // State encoding
@@ -24,7 +24,7 @@ module fsm_control (
     parameter S_DECODE    = 3'd1;
     parameter S_SHIFT_REGS   = 3'd2;
     parameter S_WRITE_ACC = 3'd3;
-    parameter S_LOAD = 3'd4;
+    parameter S_OUTPUT = 3'd4;
 
     reg [2:0] state, next_state;
 
@@ -46,8 +46,15 @@ module fsm_control (
     always @(posedge clk) begin
         if (!rst_n)
             state <= S_IDLE;
-        else
+        else begin
+            if (state == S_OUTPUT || state == S_DECODE) begin
+                out_en <= 1;
+            end
+            else begin
+                out_en <= 0;
+            end
             state <= next_state;
+        end
     end
 
     // Next state logic
@@ -61,19 +68,19 @@ module fsm_control (
                     next_state = S_DECODE;
 
             S_DECODE:
-                if (opcode == 4'b0111 || opcode == 4'b1101 || opcode == 4'b1110) // loadi, load, store
-                    next_state = S_IDLE;  
+                if (opcode == 4'b0111 || opcode == 4'b1101 || opcode == 4'b1110) begin // loadi, load, store
+                    next_state = S_IDLE;
+                end
                 else next_state = S_SHIFT_REGS;
 
             S_SHIFT_REGS:
                 if (bit_done)
-                    next_state = S_WRITE_ACC;
-                
+                    next_state = S_OUTPUT;
 
             S_WRITE_ACC:
-                    next_state = S_IDLE;
+                    next_state = S_OUTPUT;
 
-            S_LOAD:
+            S_OUTPUT:
                     next_state = S_IDLE;
         endcase
     end
@@ -85,9 +92,8 @@ module fsm_control (
         reg_store_en    = 0;
         acc_write_en    = 0;
         acc_load_en     = 0;
-        //imm_shift_en    = 0;
         alu_op          = 3'b00;
-        carry_en        = 0;
+        alu_en        = 0;
         alu_start       = 0;
         
         case (state)
@@ -102,7 +108,7 @@ module fsm_control (
                     reg_store_en = 1;
                 end else begin
                     alu_start    = 1;
-                    carry_en = 1;
+                    alu_en = 1;
                     reg_shift_en = 1;
                 end
             end
@@ -110,15 +116,20 @@ module fsm_control (
             S_SHIFT_REGS: begin
                 reg_shift_en = 1;
                 alu_op       = decode_alu_op(opcode);
-                carry_en     = 1;
+                alu_en     = 1;
                 acc_write_en = 1;
             end
 
 
             S_WRITE_ACC: begin
                 alu_op       = decode_alu_op(opcode);
-                carry_en     = 1;
+                alu_en       = 1;
                 acc_write_en = 1;
+            end
+
+            S_OUTPUT: begin
+                acc_write_en = 1;
+                alu_en = 1;
             end
 
             default: begin
