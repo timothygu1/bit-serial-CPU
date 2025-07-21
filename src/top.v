@@ -65,7 +65,9 @@ module tt_um_cpu_top (
     end
 
     wire [7:0] out_result;
-    wire [7:0] acc_dbg;
+
+    wire [7:0] acc_dbg /* verilator lint_off UNUSEDSIGNAL */;
+
     // CPU core 
     cpu_core u_cpu_core (
         .clk(clk),
