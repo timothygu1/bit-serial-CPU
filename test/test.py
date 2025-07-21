@@ -84,17 +84,28 @@ async def get_reg(dut, reg):
 
 async def assert_acc(dut, value):
     await ClockCycles(dut.clk, 3)
-    acc_val = await get_acc(dut)
-    dut._log.info(f"Accumulator bits: {acc_val} ({acc_val.integer})")
+    acc_val = await get_output(dut)
 
     assert acc_val == value, f"Expected {bin(value)}, got {bin(acc_val)}"
+    dut._log.info(f"Expected {bin(value)}, got {bin(acc_val)}")
 
-async def assert_reg(dut, reg, value):
-    await ClockCycles(dut.clk, 2)
-    reg_val = await get_reg(dut, reg)
-    dut._log.info(f"R{reg} bits: {reg_val} ({reg_val.integer})")
+# async def get_reg(dut, reg):
+#     rs1  = safe_get(dut,
+#                     "user_project.u_cpu_core.regfile.rs1_addr",
+#                     "user_project.rs1_addr")
+#     data = safe_get(dut,
+#                     "user_project.u_cpu_core.regfile.regfile_bits",
+#                     "user_project.regfile_bits")
+#     rs1.value = reg
+#     await ReadOnly()
+#     return data.value.integer & 0xFF
 
-    assert reg_val == value, f"Expected R{reg} = {bin(value)}, got {bin(reg_val)}"
+# async def assert_reg(dut, reg, value):
+#     await ClockCycles(dut.clk, 2)
+#     reg_val = await get_reg(dut, reg)
+#     dut._log.info(f"R{reg} bits: {reg_val} ({reg_val.integer})")
+
+#     assert reg_val == value, f"Expected R{reg} = {bin(value)}, got {bin(reg_val)}"
 
 @cocotb.test()
 async def test_project(dut):
