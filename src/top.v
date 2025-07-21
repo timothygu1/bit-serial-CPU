@@ -66,7 +66,7 @@ module tt_um_cpu_top (
 
     wire [7:0] out_result;
     // CPU core 
-    cpu_core u_cpu_core (
+    (* keep_hierarchy = "yes" *) cpu_core u_cpu_core (
         .clk(clk),
         .rst_n(rst_n),
         .opcode(opcode),
