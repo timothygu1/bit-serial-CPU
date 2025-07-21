@@ -6,7 +6,7 @@
 // `include "shreg.v"
 
 `default_nettype none
-(* keep_hierarchy = "yes" *)
+
 module tt_um_cpu_top (
     input  wire [7:0] ui_in,    // Inputs for instruction data (through DIP switches)
     output wire [7:0] uo_out,   // Outputs to drive LEDs
