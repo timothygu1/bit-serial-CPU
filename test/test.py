@@ -5,6 +5,17 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, ClockCycles, ReadOnly
 
+# to help in gd_test build
+from cocotb.handle import SimHandleBase
+
+def safe_get(dut: SimHandleBase, *paths: str) -> SimHandleBase:
+    # Return the first handle that exists.  Works with or without Yosys flattening.
+    for p in paths:
+        try:
+            return dut._id(p, extended=True)
+        except (AttributeError, KeyError):
+            continue
+    raise AttributeError(f"None of {paths} found in DUT hierarchy")
 
 async def clock_init(dut, useconds):
     clock = Clock(dut.clk, useconds, units="us")
@@ -36,14 +47,24 @@ async def load_instruction(dut, byte):
     await pb0_press(dut)
 
 async def get_acc(dut):
-    val = dut.user_project.u_cpu_core.acc.acc_bits.value
-    return val
+    # val = dut.user_project.u_cpu_core.acc.acc_bits.value
+    # return val
+    h = safe_get(dut,
+                 "user_project.u_cpu_core.acc.acc_bits",  # un‑flattened
+                 "user_project.acc_reg")                  # flattened (Yosys default)
+    await ReadOnly()
+    return h.value.integer & 0xFF
 
 async def get_reg(dut, reg):
-    dut.user_project.u_cpu_core.regfile.rs1_addr.value = reg
+    rs1  = safe_get(dut,
+                    "user_project.u_cpu_core.regfile.rs1_addr",
+                    "user_project.rs1_addr")
+    data = safe_get(dut,
+                    "user_project.u_cpu_core.regfile.regfile_bits",
+                    "user_project.regfile_bits")
+    rs1.value = reg
     await ReadOnly()
-    val = dut.user_project.u_cpu_core.regfile.regfile_bits.value
-    return val
+    return data.value.integer & 0xFF
 
 async def assert_acc(dut, value):
     await ClockCycles(dut.clk, 3)
