@@ -47,28 +47,26 @@ async def load_instruction(dut, byte):
     await pb0_press(dut)
 
 async def get_acc(dut):
-    val = dut.user_project.u_cpu_core.acc.acc_bits.value
-    return val
-    # h = safe_get(dut,
-    #             #  "user_project.u_cpu_core.acc.acc_bits",  # un‑flattened
-    #             #  "user_project.acc_reg")                  # flattened (Yosys default)
-    #              "user_project.u_cpu_core.acc_dbg",  # un‑flattened
-    #              "user_project.u_cpu_core_acc_dbg")                  # flattened (Yosys default)
-    # await ReadOnly()
-    # return h.value.integer & 0xFF
+    # val = dut.user_project.u_cpu_core.acc.acc_bits.value
+    # return val
+    h = safe_get(dut,
+                #  "user_project.u_cpu_core.acc.acc_bits",  # un‑flattened
+                #  "user_project.acc_reg")                  # flattened (Yosys default)
+                 "user_project.u_cpu_core.acc_dbg",  # un‑flattened
+                 "user_project.u_cpu_core_acc_dbg")                  # flattened (Yosys default)
+    await ReadOnly()
+    return h.value.integer & 0xFF
 
 async def get_reg(dut, reg):
-    dut.user_project.u_cpu_core.regfile.rs1_addr.value = reg
-    # rs1  = safe_get(dut,
-    #                 "user_project.u_cpu_core.regfile.rs1_addr",
-    #                 "user_project.rs1_addr")
-    # data = safe_get(dut,
-    #                 "user_project.u_cpu_core.regfile.regfile_bits",
-    #                 "user_project.regfile_bits")
-    # rs1.value = reg
+    rs1  = safe_get(dut,
+                    "user_project.u_cpu_core.regfile.rs1_addr",
+                    "user_project.rs1_addr")
+    data = safe_get(dut,
+                    "user_project.u_cpu_core.regfile.regfile_bits",
+                    "user_project.regfile_bits")
+    rs1.value = reg
     await ReadOnly()
-    return dut.user_project.u_cpu_core.regfile.regfile_bits.value
-    # return data.value.integer & 0xFF
+    return data.value.integer & 0xFF
 
 async def assert_acc(dut, value):
     await ClockCycles(dut.clk, 3)

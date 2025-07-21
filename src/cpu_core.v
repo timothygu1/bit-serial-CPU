@@ -1,7 +1,7 @@
 // cpu_core.v - 
 
 `default_nettype none
-(* keep_hierarchy = "yes" *)
+
 module cpu_core (
     input  wire        clk,
     input  wire        rst_n,
