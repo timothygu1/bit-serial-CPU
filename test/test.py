@@ -50,8 +50,10 @@ async def get_acc(dut):
     # val = dut.user_project.u_cpu_core.acc.acc_bits.value
     # return val
     h = safe_get(dut,
-                 "user_project.u_cpu_core.acc.acc_bits",  # un‑flattened
-                 "user_project.acc_reg")                  # flattened (Yosys default)
+                #  "user_project.u_cpu_core.acc.acc_bits",  # un‑flattened
+                #  "user_project.acc_reg")                  # flattened (Yosys default)
+                 "user_project.u_cpu_core.acc_dbg",  # un‑flattened
+                 "user_project.u_cpu_core_acc_dbg")                  # flattened (Yosys default)
     await ReadOnly()
     return h.value.integer & 0xFF
 
