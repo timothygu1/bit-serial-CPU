@@ -6,6 +6,29 @@ from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, ClockCycles, ReadOnly
 
 
+def _resolve(dut, *candidates):
+    """Return the first handle that exists in candidates.
+
+    Each candidate is a dotted path relative to dut (root).  The function
+    tries hierarchical getattr lookup; on AttributeError it falls back to
+    dut._id(path, extended=False) which works for flattened net names.
+    """
+    for path in candidates:
+        # Hierarchical getattr chain lookup
+        try:
+            h = dut
+            for part in path.split('.'):
+                h = getattr(h, part)
+            return h
+        except AttributeError:
+            # Try flat lookup using _id (no hierarchy)
+            try:
+                return dut._id(path, extended=False)
+            except ValueError:
+                pass  # candidate not present, keep looking
+    raise AttributeError(f"None of the candidate paths exist: {candidates}")
+
+
 async def clock_init(dut, useconds):
     clock = Clock(dut.clk, useconds, units="us")
     cocotb.start_soon(clock.start())
@@ -36,14 +59,28 @@ async def load_instruction(dut, byte):
     await pb0_press(dut)
 
 async def get_acc(dut):
-    val = dut.user_project.u_cpu_core.acc.acc_bits.value
-    return val
+    acc = _resolve(
+        dut,
+        "user_project.u_cpu_core.acc.acc_bits",  # RTL hierarchy
+        "u_cpu_core.acc.acc_bits",               # flattened
+    )
+    return acc.value
 
 async def get_reg(dut, reg):
-    dut.user_project.u_cpu_core.regfile.rs1_addr.value = reg
+    rs1_addr = _resolve(
+        dut,
+        "user_project.u_cpu_core.regfile.rs1_addr",
+        "u_cpu_core.regfile.rs1_addr",
+    )
+    rs1_addr.value = reg
     await ReadOnly()
-    val = dut.user_project.u_cpu_core.regfile.regfile_bits.value
-    return val
+
+    reg_bits = _resolve(
+        dut,
+        "user_project.u_cpu_core.regfile.regfile_bits",
+        "u_cpu_core.regfile.regfile_bits",
+    )
+    return reg_bits.value
 
 async def assert_acc(dut, value):
     await ClockCycles(dut.clk, 3)
