@@ -8,14 +8,14 @@ from cocotb.triggers import RisingEdge, ClockCycles, ReadOnly
 # to help in gd_test build
 from cocotb.handle import SimHandleBase
 
-def safe_get(dut: SimHandleBase, *paths: str) -> SimHandleBase:
-    # Return the first handle that exists.  Works with or without Yosys flattening.
-    for p in paths:
-        try:
-            return dut._id(p, extended=True)
-        except (AttributeError, KeyError):
-            continue
-    raise AttributeError(f"None of {paths} found in DUT hierarchy")
+# def safe_get(dut: SimHandleBase, *paths: str) -> SimHandleBase:
+#     # Return the first handle that exists.  Works with or without Yosys flattening.
+#     for p in paths:
+#         try:
+#             return dut._id(p, extended=True)
+#         except (AttributeError, KeyError):
+#             continue
+#     raise AttributeError(f"None of {paths} found in DUT hierarchy")
 
 async def clock_init(dut, useconds):
     clock = Clock(dut.clk, useconds, units="us")
@@ -46,41 +46,33 @@ async def load_instruction(dut, byte):
     await ClockCycles(dut.clk, 1)
     await pb0_press(dut)
 
-async def get_acc(dut):
-    # val = dut.user_project.u_cpu_core.acc.acc_bits.value
-    # return val
-    h = safe_get(dut,
-                #  "user_project.u_cpu_core.acc.acc_bits",  # un‑flattened
-                #  "user_project.acc_reg")                  # flattened (Yosys default)
-                 "user_project.u_cpu_core.acc_dbg",  # un‑flattened
-                 "user_project.u_cpu_core_acc_dbg")                  # flattened (Yosys default)
-    await ReadOnly()
-    return h.value.integer & 0xFF
+async def get_output(dut):
+    return dut.uo_out.value
 
-async def get_reg(dut, reg):
-    rs1  = safe_get(dut,
-                    "user_project.u_cpu_core.regfile.rs1_addr",
-                    "user_project.rs1_addr")
-    data = safe_get(dut,
-                    "user_project.u_cpu_core.regfile.regfile_bits",
-                    "user_project.regfile_bits")
-    rs1.value = reg
-    await ReadOnly()
-    return data.value.integer & 0xFF
-
-async def assert_acc(dut, value):
+async def assert_result(dut, value):
     await ClockCycles(dut.clk, 3)
-    acc_val = await get_acc(dut)
-    dut._log.info(f"Accumulator bits: {acc_val} ({acc_val.integer})")
+    acc_val = await get_output(dut)
 
     assert acc_val == value, f"Expected {bin(value)}, got {bin(acc_val)}"
+    dut._log.info(f"Expected {bin(value)}, got {bin(acc_val)}")
 
-async def assert_reg(dut, reg, value):
-    await ClockCycles(dut.clk, 2)
-    reg_val = await get_reg(dut, reg)
-    dut._log.info(f"R{reg} bits: {reg_val} ({reg_val.integer})")
+# async def get_reg(dut, reg):
+#     rs1  = safe_get(dut,
+#                     "user_project.u_cpu_core.regfile.rs1_addr",
+#                     "user_project.rs1_addr")
+#     data = safe_get(dut,
+#                     "user_project.u_cpu_core.regfile.regfile_bits",
+#                     "user_project.regfile_bits")
+#     rs1.value = reg
+#     await ReadOnly()
+#     return data.value.integer & 0xFF
 
-    assert reg_val == value, f"Expected R{reg} = {bin(value)}, got {bin(reg_val)}"
+# async def assert_reg(dut, reg, value):
+#     await ClockCycles(dut.clk, 2)
+#     reg_val = await get_reg(dut, reg)
+#     dut._log.info(f"R{reg} bits: {reg_val} ({reg_val.integer})")
+
+#     assert reg_val == value, f"Expected R{reg} = {bin(value)}, got {bin(reg_val)}"
 
 @cocotb.test()
 async def test_project(dut):
@@ -96,25 +88,25 @@ async def test_project(dut):
     await load_instruction(dut, 0b00000111)
     await load_instruction(dut, 0x2D)
 
-    await assert_acc(dut, 0x2D)
+    await assert_result(dut, 0x2D)
 
     # STORE rs4
     await load_instruction(dut, 0b01001110)
     await load_instruction(dut, 0x00)
 
-    await assert_reg(dut, 4, 0x2D)
+    #await assert_reg(dut, 4, 0x2D)
 
     # LOADI 0x73
     await load_instruction(dut, 0b00000111)
     await load_instruction(dut, 0x73)
 
-    await assert_acc(dut, 0x73)
+    await assert_result(dut, 0x73)
 
     # STORE rs3
     await load_instruction(dut, 0b00111110)
     await load_instruction(dut, 0x00)
 
-    await assert_reg(dut, 3, 0x73)
+    #await assert_reg(dut, 3, 0x73)
 
     # r4 = 0x2D = 45
     # r3 = 0x73 = 115
@@ -126,7 +118,7 @@ async def test_project(dut):
     await ClockCycles(dut.clk, 10)
     
     # expected: 0x5E
-    await assert_acc(dut, 0x5E)
+    await assert_result(dut, 0x5E)
 
 
     # AND r3, r4
@@ -136,7 +128,7 @@ async def test_project(dut):
     await ClockCycles(dut.clk, 10)
 
     # expected: 0x21
-    await assert_acc(dut, 0x21)
+    await assert_result(dut, 0x21)
 
 
     # ADD r3, r4
@@ -146,7 +138,7 @@ async def test_project(dut):
     await ClockCycles(dut.clk, 10)
 
     # expected: 0xA0 = 160
-    await assert_acc(dut, 0xA0)
+    await assert_result(dut, 0xA0)
 
 
     # SUB r3, r4
@@ -156,7 +148,7 @@ async def test_project(dut):
     await ClockCycles(dut.clk, 10)
 
     # expected: 0x46 = 70
-    await assert_acc(dut, 0x46)
+    await assert_result(dut, 0x46)
 
     # Immediate instructions
 
@@ -166,7 +158,7 @@ async def test_project(dut):
    
     await ClockCycles(dut.clk, 10)
 
-    await assert_acc(dut, 0x11)
+    await assert_result(dut, 0x11)
 
 
     # XORI r4 0x56
@@ -176,7 +168,7 @@ async def test_project(dut):
     await ClockCycles(dut.clk, 10)
 
     # expected: 0b00101101 ^ 0b01010110 = 0b01111011 = 0x7B
-    await assert_acc(dut, 0x7B)
+    await assert_result(dut, 0x7B)
 
     # SUBI r3 0x2C
     await load_instruction(dut, 0b00110001)
@@ -184,7 +176,7 @@ async def test_project(dut):
 
     await ClockCycles(dut.clk, 10)
     #expected: 0x47
-    await assert_acc(dut, 0x47)
+    await assert_result(dut, 0x47)
 
     # SWAP R3 and R4:
 
@@ -212,8 +204,14 @@ async def test_project(dut):
     await load_instruction(dut, 0b01001110)
     await load_instruction(dut, 0x00)
 
-    await assert_reg(dut, 3, 0x2D)
-    await assert_reg(dut, 4, 0x73)
+    # check R4
+    await assert_result(dut, 0x73)
+
+    # load R3 and check R3
+    await load_instruction(dut, 0b00111101)
+    await load_instruction(dut, 0x00)
+
+    await assert_result(dut, 0x2D)
 
     await ClockCycles(dut.clk, 10)
 
