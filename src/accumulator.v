@@ -1,4 +1,4 @@
-// shift_reg.v - shift register with optional parallel load
+// accumulator.v - shift register with optional parallel load
 
 `default_nettype none
 
