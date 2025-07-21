@@ -9,7 +9,10 @@ module cpu_core (
     input  wire [11:0] instr,
     input  wire        inst_done,
     input  wire        btn_edge,
-    output reg  [7:0]  out_result
+    output reg  [7:0]  out_result,
+
+    /* for gate-level testing purposes */
+    output wire [7:0]  acc_dbg
 );
 
     /*     CPU Core output     */
@@ -54,6 +57,9 @@ module cpu_core (
     end
 
     /*      Module connections begin here      */
+
+    /* gate-level debug port */
+    assign acc_dbg = acc_bits;
     
     // Addressable register file
     regfile_serial regfile (
