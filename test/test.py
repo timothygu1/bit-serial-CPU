@@ -105,6 +105,16 @@ async def test_project(dut):
     # STORE rs3
     await load_instruction(dut, 0b00111110)
     await load_instruction(dut, 0x00)
+    
+    # LOADI 0x0A
+    await load_instruction(dut, 0b00000111)
+    await load_instruction(dut, 0x0A)
+
+    await assert_result(dut, 0x0A)
+
+    # STORE rs7
+    await load_instruction(dut, 0b01111110)
+    await load_instruction(dut, 0x00)
 
     #await assert_reg(dut, 3, 0x73)
 
@@ -177,6 +187,20 @@ async def test_project(dut):
     await ClockCycles(dut.clk, 10)
     #expected: 0x47
     await assert_result(dut, 0x47)
+
+    # SLLI r7, 0x03
+    await load_instruction(dut, 0b01110010)
+    await load_instruction(dut, 0x03)
+
+    await ClockCycles(dut.clk, 10)
+    await assert_result(dut, 0x50)
+
+    # SRLI r7, 0x2
+    await load_instruction(dut, 0b01110011)
+    await load_instruction(dut, 0x01)
+
+    await ClockCycles(dut.clk, 10)
+    await assert_result(dut, 0x5)
 
     # SWAP R3 and R4:
 

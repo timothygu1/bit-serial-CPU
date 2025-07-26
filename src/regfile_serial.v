@@ -9,11 +9,9 @@ module regfile_serial #(
     input  wire               clk,
     input  wire               rstn,
     input  wire               reg_shift_en,     // 1 bit shift per cycle when high
-    // LINT: temporary disable (to be implemented later)
-    /* verilator lint_off UNUSED */
     input  wire [11:0]        instr,
-    /* verilator lint_on UNUSED */
     input  wire [7:0]         regs_parallel_in,
+    input  wire [2:0]         alu_op,
     output reg  [2:0]         bit_index,
     output wire [7:0]         regfile_bits,
     output wire               rs1_bit,
@@ -21,8 +19,9 @@ module regfile_serial #(
     input  wire               reg_store_en      // parallel store from accumulator
 );
 
-    wire [2:0] rs1_addr = instr[2:0];
-    wire [2:0] rs2_addr = instr[6:4]; // only relevant for R-type
+    wire [2:0] rs1_addr  = instr[2:0];
+    wire [2:0] rs2_addr  = instr[6:4];  // only relevant for R-type
+    wire [2:0] shift_imm = (instr[11:4] >= 7) ? 3'b111 : instr[6:4]; // only relevant for I-type
 
     reg [REG_WIDTH-1:0] regs [0:REG_COUNT-1];
 
@@ -40,8 +39,16 @@ module regfile_serial #(
             regs[rs1_addr] <= regs_parallel_in;
         end
     end
+    
+    assign rs1_bit =
+    (alu_op == 3'b101) ? (
+        (bit_index >= shift_imm) ? regs[rs1_addr][bit_index - shift_imm] : 1'b0
+    ) :
+    (alu_op == 3'b110) ? (
+        ((bit_index + shift_imm) < REG_WIDTH) ? regs[rs1_addr][bit_index + shift_imm] : 1'b0
+    ) :
+    regs[rs1_addr][bit_index];
 
-    assign rs1_bit = regs[rs1_addr][bit_index];
     assign rs2_bit = regs[rs2_addr][bit_index];
 
     assign regfile_bits = regs[rs1_addr];

@@ -67,6 +67,7 @@ module cpu_core (
         .rstn(rst_n),
         .reg_shift_en(reg_shift_en),
         .instr(instr),
+        .alu_op(alu_op),
         .rs1_bit(alu_bit1),
         .rs2_bit(rs2_bit),
         .regs_parallel_in(acc_bits),
