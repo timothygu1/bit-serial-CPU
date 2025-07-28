@@ -12,23 +12,87 @@ You can also include images in this folder and reference them in the markdown. E
 A bit-serial CPU processes one bit of a data word at a time using minimal logic - often reusing a small ALU and control unit across clock cycles. This is in contrast to a bit-parallel CPU, which processes entire data words (e.g., 8/16/32 bits) at once.
 
 ### Block Diagram
-![298A Block Diagram](https://github.com/user-attachments/assets/b3a920e7-caca-4666-9459-7a705585725b)
+<img width="2719" height="1014" alt="image" src="https://github.com/user-attachments/assets/c0e4eb80-4685-4eb3-b876-7a634d39eb94" />
 
-### Todo: Explanation of architecture
-- Register file
-- Bit-serial ALU
-- Accumulator register
-- Control FSM
-- Functional use (button press, instructions loaded over 2 cycles)
+### Architecture Breakdown
 
-### TinyTapeout Signals
+#### Control FSM
+The `fsm_control` module orchestrates datapath sequencing using a 5-state FSM:
+
+1. `S_IDLE`: Waits for button press and valid instruction
+
+2. `S_DECODE`: Decodes opcode, issues control signals for load/store/ALU
+
+3. `S_SHIFT_REGS`: Performs serial operations; enables register shifting and accumulator writes
+
+4. `S_WRITE_ACC`: Special case state for direct writes (not commonly used)
+
+5. `S_OUTPUT`: Signals end of execution and enables writing to output LEDs
+
+The FSM generates control signals including  `reg_shift_en`, `acc_write_en`, `alu_start`, `alu_op`, and `out_e`n based on instruction type.
+
+#### Register File
+The regfile_serial module implements an 8×8 register file, where each register is 8 bits wide. It supports:
+- Serial read: each clock cycle, the bit_index increments, allowing serial bit access.
+- Parallel write: a whole 8-bit register is overwritten at once from the accumulator.
+- Shift operations: for shift-left/right immediate `(SLLI/SRLI)`, rs1_bit is offset by shift_imm, computed from `instr[6:4]`.
+
+The register file outputs:
+- `rs1_bit`: used as ALU operand 1
+- `rs2_bit`: used as ALU operand 2 (only valid for R-type)
+- `regfile_bits`: parallel content of the selected rs1 register, for `LOAD/LOADI`
+
+#### Bit-Serial ALU
+The alu_1bit module performs a one-bit computation per cycle based on alu_op:
+- Supports operations: `ADD`, `SUB`, `XOR`, `AND`, `OR`, pass-through (for shift ops).
+- `carry_in` and `carry_out` are managed explicitly to support serial arithmetic.
+- For `SUB`, `rs2` is inverted and an initial carry is injected on the first cycle.
+
+The ALU receives `rs1`, `rs2`, `alu_op`, `alu_start`, and outputs a single-bit result to the accumulator.
+
+#### Accumulator Register
+The accumulator is an 8-bit shift register that:
+- Loads data in parallel from `regfile_bits` or `instr[11:4]` (based on `opcode[3]`)
+- Receives ALU output one bit at a time via `alu_result`
+- Tracks the write index using a delayed `bit_index_d` signal to update the correct bit and signals completion when done
+
+The accumulator provides the final output via `acc_bits`.
+
+##  Functional Use (Instruction Loading)
+
+### TinyTapeout Signals Used
 | Pin Group	| Type |	Usage |
 | --------- | ---- | ------ |
-| load[7:0] |	Input	| Value to load to register |
-| opcode[3:0]	 | Bidirectional | 4-bit instruction opcode |
-| out[7:0] | Output |	Parallel output |
-| clk |	Clock |	clock input |
-| rst	| Reset |	reset FSM and registers |
+| ui_in[7:0] |	Input	| Instruction bit inputs |
+| uio_in[0] |	Bidirectional	| Pushbutton input for instruction loading |
+| uo_out[7:0] | Output |	Parallel output |
+| clk |	Clock |	Clock input |
+| rst_n	| Reset |	Active low synchronous reset |
+
+### 16-bit Instruction Bit Fields
+
+#### I-Type (opcode[3] == 0)
+| [15:8] | [7] | [6:4]| [3:0] |
+| --- | --- |--- | --- |
+| immediate[7:0] |unused| rs1_addr[2:0] | opcode[3:0] |
+
+#### R-Type (opcode[3] == 1)
+| [15:11] | [10:7] | [6:4]| [3:0] |
+| --- | --- |--- | --- |
+| unused | rs2_addr | rs1_addr[2:0] | opcode[3:0] |
+
+Instructions are loaded manually over two clock cycles via button press:
+
+First press:
+- Lower 4 bits (`ui_in[3:0]`) are latched into `opcode[3:0]`
+- Upper 4 bits (`ui_in[7:4]`) go into `instr[3:0]`
+- `inst_done` is set high
+
+Second press:
+- `ui_in[7:0]` fills in `instr[11:4]`
+- `inst_done` is cleared
+
+An edge-detected pushbutton (connected via `uio_in[0]`) triggers instruction loading. Once loaded, the FSM executes the instruction, and the final result is output on `uo_out[7:0]`.
 
 ### Instruction Set
 | Opcode | Mnemonic | C Operation                    | Description |
