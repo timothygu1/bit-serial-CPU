@@ -1,6 +1,6 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
 
-# 8-Bit-Serial CPU
+# 16-Bit-Serial CPU
 
 - [Read the documentation for project](docs/info.md)
 
