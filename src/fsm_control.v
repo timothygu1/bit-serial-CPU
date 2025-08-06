@@ -1,14 +1,16 @@
-// fsm_control.v - Finite State Machine control logic
+// ============================================================================
+// fsm_control.v   | Finite State Machine control logic
+// ============================================================================
 
 `default_nettype none
 
 module fsm_control (
     input  wire        clk,
     input  wire        rst_n,
-    input  wire [3:0]  opcode,     // from top.v
-    input  wire        inst_done,  // full instruction loaded from top.v
-    input  wire        btn_edge,   // one-pulse from top.v
-    input  wire        bit_done,   // from shift_reg.v
+    input  wire [3:0]  opcode,          // from top.v
+    input  wire        inst_done,       // full instruction loaded from top.v
+    input  wire        btn_edge,        // one-pulse from top.v
+    input  wire        bit_done,        // from shift_reg.v
     output reg         alu_start,
     output reg         reg_shift_en,
     output reg         reg_store_en,
@@ -31,13 +33,13 @@ module fsm_control (
     // ALU opcode decoder
     function [2:0] decode_alu_op(input [3:0] opc);
         case (opc)
-            4'b0000, 4'b1000: decode_alu_op = 3'b000; // ADD, ADDI
-            4'b0001, 4'b1001: decode_alu_op = 3'b001; // SUB, SUBI (b must be inverted in datapath or FSM)
-            4'b0110, 4'b1100: decode_alu_op = 3'b010; // XOR, XORI
-            4'b0101, 4'b1011: decode_alu_op = 3'b011; // AND, ANDI
-            4'b0100, 4'b1010: decode_alu_op = 3'b100; // OR,  ORI
-            4'b0010:          decode_alu_op = 3'b101; // SLLI
-            4'b0011:          decode_alu_op = 3'b110; // SRLI
+            4'b0000, 4'b1000: decode_alu_op = 3'b000;   // ADD, ADDI
+            4'b0001, 4'b1001: decode_alu_op = 3'b001;   // SUB, SUBI (b must be inverted in datapath or FSM)
+            4'b0110, 4'b1100: decode_alu_op = 3'b010;   // XOR, XORI
+            4'b0101, 4'b1011: decode_alu_op = 3'b011;   // AND, ANDI
+            4'b0100, 4'b1010: decode_alu_op = 3'b100;   // OR,  ORI
+            4'b0010:          decode_alu_op = 3'b101;   // SLLI
+            4'b0011:          decode_alu_op = 3'b110;   // SRLI
             default:          decode_alu_op = 3'b000;
         endcase
     endfunction
@@ -57,7 +59,15 @@ module fsm_control (
         end
     end
 
-    // Next state logic
+    /*
+     * FSM next-state logic:
+     * - Default:       transitions to IDLE.
+     * - In IDLE:       on button edge & instruction done -> DECODE.
+     * - In DECODE:     if load/store (opcode 0111,1101,1110) -> IDLE; else -> SHIFT_REGS.
+     * - In SHIFT_REGS: on bit_done -> OUTPUT.
+     * - In WRITE_ACC:  unconditionally -> OUTPUT.
+     * - In OUTPUT:     transitions to IDLE.
+     */
     always @(*) begin
         next_state = state;
         case (state)
@@ -85,58 +95,24 @@ module fsm_control (
         endcase
     end
 
-    // Outputs
-    always @(*) begin
-        // Default: deassert everything
-        reg_shift_en    = 0;
-        reg_store_en    = 0;
-        acc_write_en    = 0;
-        acc_load_en     = 0;
-        alu_op          = 3'b00;
-        alu_en        = 0;
-        alu_start       = 0;
-        
-        case (state)
-            S_IDLE: begin
-            end
+    // precompute decode flags and op
+    wire        is_load    = (opcode == 4'b0111) || (opcode == 4'b1101);
+    wire        is_store   = (opcode == 4'b1110);
+    wire        do_shift   = (state == S_SHIFT_REGS);
+    wire        do_write   = (state == S_WRITE_ACC) || (state == S_OUTPUT);
+    wire        do_calc    = (state == S_DECODE && !is_load && !is_store)
+                        || do_shift
+                        || do_write;
 
-            S_DECODE: begin
-                alu_op       = decode_alu_op(opcode);
-                if (opcode == 4'b0111 || opcode == 4'b1101) begin // loadi, load
-                    acc_load_en = 1;
-                end else if (opcode == 4'b1110) begin  // store
-                    reg_store_en = 1;
-                end else begin
-                    alu_start    = 1;
-                    alu_en = 1;
-                    reg_shift_en = 1;
-                end
-            end
+    wire [2:0]  alu_decoded = decode_alu_op(opcode);
 
-            S_SHIFT_REGS: begin
-                reg_shift_en = 1;
-                alu_op       = decode_alu_op(opcode);
-                alu_en     = 1;
-                acc_write_en = 1;
-            end
-
-
-            S_WRITE_ACC: begin
-                alu_op       = decode_alu_op(opcode);
-                alu_en       = 1;
-                acc_write_en = 1;
-            end
-
-            S_OUTPUT: begin
-                acc_write_en = 1;
-                alu_en = 1;
-            end
-
-            default: begin
-            end
-
-        endcase
-    end
-
+    // continuous assignments
+    assign alu_op       = alu_decoded;
+    assign alu_en       = do_calc;
+    assign alu_start    = (state == S_DECODE && !is_load && !is_store);
+    assign acc_load_en  = (state == S_DECODE && is_load);
+    assign reg_store_en = (state == S_DECODE && is_store);
+    assign reg_shift_en = (state == S_DECODE && !is_load && !is_store) || do_shift;
+    assign acc_write_en = do_shift || do_write;
 
 endmodule

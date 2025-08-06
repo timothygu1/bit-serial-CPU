@@ -8,14 +8,14 @@
 `default_nettype none
 
 module tt_um_cpu_top (
-    input  wire [7:0] ui_in,    // Inputs for instruction data (through DIP switches)
-    output wire [7:0] uo_out,   // Outputs to drive LEDs
-    input  wire [7:0] uio_in,   // IOs: Input path
-    output wire [7:0] uio_out,  // IOs: Output path
-    output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
-    input  wire       ena,      // always 1 when the design is powered, so you can ignore it
-    input  wire       clk,      // clock
-    input  wire       rst_n     // reset_n - low to reset
+    input  wire [7:0] ui_in,       // Inputs for instruction data (through DIP switches)
+    output wire [7:0] uo_out,      // Outputs to drive LEDs
+    input  wire [7:0] uio_in,      // IOs: Input path
+    output wire [7:0] uio_out,     // IOs: Output path
+    output wire [7:0] uio_oe,      // IOs: Enable path (active high: 0=input, 1=output)
+    input  wire       ena,         // always 1 when the design is powered, so you can ignore it
+    input  wire       clk,         // clock
+    input  wire       rst_n        // reset_n - low to reset
 );
 
     // All output pins must be assigned. If not used, assign to 0.
@@ -27,7 +27,6 @@ module tt_um_cpu_top (
     reg inst_done;
 
     // parallel load instructions into instr reg
-
     always @(posedge clk) begin
         if (!rst_n) begin // Reset
             opcode      <= 4'b0;

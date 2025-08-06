@@ -1,4 +1,6 @@
-// cpu_core.v - Bit-serial CPU core
+// ============================================================================
+// cpu_core.v      | Bit-serial CPU core
+// ============================================================================
 
 `default_nettype none
 
@@ -19,8 +21,8 @@ module cpu_core (
     wire [7:0] acc_bits;
     wire out_en;
 
-    wire [2:0] bit_index;  // Tracks regFile bit index
-    reg [2:0] bit_index_d; // Delayed bit_index passed to accumulator
+    wire [2:0] bit_index;                                               // Tracks regFile bit index
+    reg [2:0] bit_index_d;                                              // Delayed bit_index passed to accumulator
 
     /*      ALU Operands & Signals            */
     wire alu_bit1, alu_bit2, rs2_bit, alu_result;
@@ -38,10 +40,10 @@ module cpu_core (
 
     /*      R-type vs I-type Multiplexers          */
 
-    assign acc_parallel_in = acc_load_en ? (opcode[3] ? regfile_bits : instr[11:4])
-                             : 8'b0; // Accumulator parallel 2-1 mux
-
-    assign alu_bit2 = (opcode[3]) ? rs2_bit : (instr[bit_index + 4]); // ALU 2-1 mux
+    // Accumulator parallel 2-1 mux
+    assign acc_parallel_in = acc_load_en ? (opcode[3] ? regfile_bits : instr[11:4]) : 8'b0;
+    // ALU 2-1 mux
+    assign alu_bit2 = (opcode[3]) ? rs2_bit : (instr[bit_index + 4]);
 
     // Generating delayed bit index
     always @(posedge clk) begin
@@ -59,7 +61,7 @@ module cpu_core (
     /*      Module connections begin here      */
 
     assign acc_dbg = acc_bits;
-    
+
     // Addressable register file
     regfile_serial regfile (
         .clk(clk),
