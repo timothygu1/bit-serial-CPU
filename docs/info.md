@@ -118,6 +118,32 @@ The accumulator is an 8-bit shift register that:
 The accumulator provides the final output via `acc_bits`.
 
 
-## How to test
+## Test Plan
+This project uses a black-box testing strategy to validate the behavior of the bit-serial CPU. 
 
-TBD: Add this section
+- **Inputs**: Sequences of instructions are applied to the design via `ui_in[7:0]` and a simulated pushbutton `uio_in[0]`.
+- **Outputs**: `uo_out[7:0]` is compared against the expected result to determine if the CPU gives the correct output.
+- **Clock and Reset**: Controlled via `clk` and `rst_n`.
+
+This is a clean abstraction of test logic that reflects the real-world usage model of the CPU with portability to gate-level simulations.
+
+A cocoTB testbench is used to run tests in Python. Each test uses the following structure:
+
+1. Begin by starting the system clock and asserting/deasserting reset.
+2. Instructions are loaded using simulated button presses. After an instruction load, insert a delay matching the bit-serial ALU's processing time (via await ClockCycles(...)) before giving the next instruction.
+3. Compare `uo_out` against the expected result using `assert_result(...)`. A test fails if the result mismatches or the CPU fails to update the output.
+
+### Test Coverage
+
+| Instructions Used                             | Test File                                       | Testing Strategy |
+| ------------------------------------ | -------------------------------------------------- | ----- |
+| `ADD`, `SUB`, `AND`, `OR`, `XOR`, `LOADI`, `STORE`      | [`test/tests/alu_ops.py`](https://github.com/timothygu1/bit-serial-CPU/blob/a4838efc1c192e5c24428fe590310855518c1b8a/test/tests/alu_ops.py) | Load known values into registers, execute all R-type instructions using those registers, and assert expected results |
+| `ADDI`, `SUBI`, `ANDI`, `ORI`, `XORI`, `LOADI`, `STORE` | [`test/tests/imm_alu_ops.py`](https://github.com/timothygu1/bit-serial-CPU/blob/a4838efc1c192e5c24428fe590310855518c1b8a/test/tests/imm_alu_ops.py) | Load known values into registers, execute all I-type instructions using stored values along with immediates, and assert expected results |
+| `SLLI`, `SRLI`, `LOADI`, `STORE`         | [`test/tests/shift_ops.py`](https://github.com/timothygu1/bit-serial-CPU/blob/a4838efc1c192e5c24428fe590310855518c1b8a/test/tests/shift_ops.py) | Load known values into a register and perform left shift and right shift using different shift amounts |
+| All instructions                 | [`test/tests/full.py`](https://github.com/timothygu1/bit-serial-CPU/blob/a4838efc1c192e5c24428fe590310855518c1b8a/test/tests/full.py)| Full integration test including the entire instruction set |
+
+#### Features validated implicitly from result correctness:
+- Accumulator shifting
+- Bit-serial ALU operations
+- Register file read/write logic
+- FSM transitions and timing
