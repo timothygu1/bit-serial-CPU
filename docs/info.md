@@ -135,15 +135,24 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
 
 ### Test Coverage
 
-| Instructions Used                             | Test File                                       | Testing Strategy |
-| ------------------------------------ | -------------------------------------------------- | ----- |
-| `ADD`, `SUB`, `AND`, `OR`, `XOR`, `LOADI`, `STORE`      | [`test/tests/alu_ops.py`](https://github.com/timothygu1/bit-serial-CPU/blob/a4838efc1c192e5c24428fe590310855518c1b8a/test/tests/alu_ops.py) | Load known values into registers, execute all R-type instructions using those registers, and assert expected results |
-| `ADDI`, `SUBI`, `ANDI`, `ORI`, `XORI`, `LOADI`, `STORE` | [`test/tests/imm_alu_ops.py`](https://github.com/timothygu1/bit-serial-CPU/blob/a4838efc1c192e5c24428fe590310855518c1b8a/test/tests/imm_alu_ops.py) | Load known values into registers, execute all I-type instructions using stored values along with immediates, and assert expected results |
-| `SLLI`, `SRLI`, `LOADI`, `STORE`         | [`test/tests/shift_ops.py`](https://github.com/timothygu1/bit-serial-CPU/blob/a4838efc1c192e5c24428fe590310855518c1b8a/test/tests/shift_ops.py) | Load known values into a register and perform left shift and right shift using different shift amounts |
-| All instructions                 | [`test/tests/full.py`](https://github.com/timothygu1/bit-serial-CPU/blob/a4838efc1c192e5c24428fe590310855518c1b8a/test/tests/full.py)| Full integration test including the entire instruction set |
+| **Test File**                                                                                        | **Instructions Tested**                                 | **Testing Strategy**                                                                                                  | **Modules Covered**                                                                       | **Features Validated**                                                                                          |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| [`full.py`](https://github.com/timothygu1/bit-serial-CPU/blob/main/test/tests/full.py)               | All (R-type, I-type, LOAD, STORE, LOADI, shifts)        | Executes full sequence of loads, arithmetic, logical, and memory ops to test integration across all instruction types | `top.v`, `fsm_control.v`, `cpu_core.v`, `regfile_serial.v`, `accumulator.v`, `alu_1bit.v` | Full FSM flow, end-to-end bit-serial execution, regfile store/load, instruction decode logic |
+| [`alu_ops.py`](https://github.com/timothygu1/bit-serial-CPU/blob/main/test/tests/alu_ops.py)         | `ADD`, `SUB`, `AND`, `OR`, `XOR`, `LOADI`, `STORE`      | Loads fixed values into registers, runs R-type ALU instructions, checks accumulator result                            | `fsm_control.v`, `cpu_core.v`, `regfile_serial.v`, `accumulator.v`, `alu_1bit.v`          | Bit-serial ALU op correctness, regfile serial access, R-type decode, accumulator correctness                   |
+| [`imm_alu_ops.py`](https://github.com/timothygu1/bit-serial-CPU/blob/main/test/tests/imm_alu_ops.py) | `ADDI`, `SUBI`, `ANDI`, `ORI`, `XORI`, `LOADI`, `STORE` | Sets up known reg values, executes I-type ops with immediate values, and checks accumulator output                    | `fsm_control.v`, `cpu_core.v`, `regfile_serial.v`, `accumulator.v`, `alu_1bit.v`          | Immediate decoding logic, bit-serial ALU with immediate operand, regfile serial access, accumulator correctness                      |
+| [`shift_ops.py`](https://github.com/timothygu1/bit-serial-CPU/blob/main/test/tests/shift_ops.py)     | `SLLI`, `SRLI`, `LOADI`, `STORE`                        | Loads values into reg, shifts them left/right using various immediates, and checks accumulator                        | `fsm_control.v`, `cpu_core.v`, `regfile_serial.v`, `accumulator.v`                        | Shift index calculation, bit-serial shifting via offset, regfile serial access, accumulator correctness         |
 
-#### Features validated implicitly from result correctness:
-- Accumulator shifting
-- Bit-serial ALU operations
-- Register file read/write logic
-- FSM transitions and timing
+
+### Test Results
+```
+**************************************************************************************
+** TEST                          STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+**************************************************************************************
+** tests.full.test_alu_ops        PASS     1650000.00           0.02   105090072.04  **
+** tests.full.test_imm_alu_ops    PASS     1660000.00           0.02   109800265.64  **
+** tests.full.test_shift_ops      PASS     1430000.00           0.01   114583144.98  **
+** tests.full.test_full           PASS     3730000.00           0.03   110191395.32  **
+**************************************************************************************
+** TESTS=4 PASS=4 FAIL=0 SKIP=0            8470000.00           0.11   76811446.55  **
+**************************************************************************************
+```
