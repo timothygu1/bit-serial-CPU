@@ -11,7 +11,7 @@ You can also include images in this folder and reference them in the markdown. E
 
 A bit-serial CPU processes one bit of a data word at a time using minimal logic - often reusing a small ALU and control unit across clock cycles. This is in contrast to a bit-parallel CPU, which processes entire data words (e.g., 8/16/32 bits) at once.
 
-Processing a single bit at a time instead of in parallel means that the CPU is much slower, but it can be made much smaller. This makes the bit-serial architecture very suitable for a submission to TinyTapeout in which a chip area of 160 x 100 μm is one of the primary constraints.
+Processing a single bit at a time instead of in parallel means that the CPU is much slower, but it can be made much smaller. This makes the bit-serial architecture very suitable for a submission to TinyTapeout in which a chip area of 160 x 100 um is one of the primary constraints.
 
 In this design, 16-bit width instructions are fed into the CPU over two clock cycles using the 8 TinyTapeout input signals. These instructions are decoded and the relevant operands (either immediates or stored values from a register file) are processed bit-serially from LSB to MSB and shifted into an accumulator register. The CPU supports parallel load operations to the accumulator and storing results from the accumulator to an addressable register file.
 
@@ -91,7 +91,7 @@ The `fsm_control` module orchestrates datapath sequencing using a 5-state FSM:
 The FSM generates control signals including  `reg_shift_en`, `acc_write_en`, `alu_start`, `alu_op`, and `out_e`n based on instruction type.
 
 #### Register File
-The regfile_serial module implements an 8×8 register file, where each register is 8 bits wide. It supports:
+The regfile_serial module implements an 8x8 register file, where each register is 8 bits wide. It supports:
 - Serial read: each clock cycle, the bit_index increments, allowing serial bit access.
 - Parallel write: a whole 8-bit register is overwritten at once from the accumulator.
 - Shift operations: for shift-left/right immediate `(SLLI/SRLI)`, rs1_bit is offset by shift_imm, computed from `instr[6:4]`.
@@ -135,24 +135,66 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
 
 ### Test Coverage
 
-| **Test File**                                                                                        | **Instructions Tested**                                 | **Testing Strategy**                                                                                                  | **Modules Covered**                                                                       | **Features Validated**                                                                                          |
-| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| [`full.py`](https://github.com/timothygu1/bit-serial-CPU/blob/main/test/tests/full.py)               | All (R-type, I-type, LOAD, STORE, LOADI, shifts)        | Executes full sequence of loads, arithmetic, logical, and memory ops to test integration across all instruction types | `top.v`, `fsm_control.v`, `cpu_core.v`, `regfile_serial.v`, `accumulator.v`, `alu_1bit.v` | Full FSM flow, end-to-end bit-serial execution, regfile store/load, instruction decode logic |
-| [`alu_ops.py`](https://github.com/timothygu1/bit-serial-CPU/blob/main/test/tests/alu_ops.py)         | `ADD`, `SUB`, `AND`, `OR`, `XOR`, `LOADI`, `STORE`      | Loads fixed values into registers, runs R-type ALU instructions, checks accumulator result                            | `fsm_control.v`, `cpu_core.v`, `regfile_serial.v`, `accumulator.v`, `alu_1bit.v`          | Bit-serial ALU op correctness, regfile serial access, R-type decode, accumulator correctness                   |
-| [`imm_alu_ops.py`](https://github.com/timothygu1/bit-serial-CPU/blob/main/test/tests/imm_alu_ops.py) | `ADDI`, `SUBI`, `ANDI`, `ORI`, `XORI`, `LOADI`, `STORE` | Sets up known reg values, executes I-type ops with immediate values, and checks accumulator output                    | `fsm_control.v`, `cpu_core.v`, `regfile_serial.v`, `accumulator.v`, `alu_1bit.v`          | Immediate decoding logic, bit-serial ALU with immediate operand, regfile serial access, accumulator correctness                      |
-| [`shift_ops.py`](https://github.com/timothygu1/bit-serial-CPU/blob/main/test/tests/shift_ops.py)     | `SLLI`, `SRLI`, `LOADI`, `STORE`                        | Loads values into reg, shifts them left/right using various immediates, and checks accumulator                        | `fsm_control.v`, `cpu_core.v`, `regfile_serial.v`, `accumulator.v`                        | Shift index calculation, bit-serial shifting via offset, regfile serial access, accumulator correctness         |
+#### full.py  
+- **Instructions:** All (R-type, I-type, LOAD, STORE, LOADI, shifts)  
+- **Strategy:** Executes a full sequence of loads, arithmetic, logical and memory ops to test integration across all instruction types.  
+- **Modules:**  
+  - top.v  
+  - fsm_control.v  
+  - cpu_core.v  
+  - regfile_serial.v  
+  - accumulator.v  
+  - alu_1bit.v  
+- **Features:** Full FSM flow; end-to-end bit-serial execution; regfile store/load; instruction-decode logic  
+
+#### alu_ops.py  
+- **Instructions:** ADD, SUB, AND, OR, XOR, LOADI, STORE  
+- **Strategy:** Loads fixed values into registers; runs R-type ALU instructions; checks accumulator result.  
+- **Modules:** fsm_control.v, cpu_core.v, regfile_serial.v, accumulator.v, alu_1bit.v  
+- **Features:** Bit-serial ALU correctness; regfile serial access; R-type decode; accumulator correctness  
+
+#### imm_alu_ops.py  
+- **Instructions:** ADDI, SUBI, ANDI, ORI, XORI, LOADI, STORE  
+- **Strategy:** Sets known register values; executes I-type ops with immediates; checks accumulator output.  
+- **Modules:** fsm_control.v, cpu_core.v, regfile_serial.v, accumulator.v, alu_1bit.v  
+- **Features:** Immediate-decode logic; bit-serial ALU with immediate operand; regfile serial access; accumulator correctness  
+
+#### shift_ops.py  
+- **Instructions:** SLLI, SRLI, LOADI, STORE  
+- **Strategy:** Loads values into registers; shifts left/right by various immediates; checks accumulator.  
+- **Modules:** fsm_control.v, cpu_core.v, regfile_serial.v, accumulator.v  
+- **Features:** Shift-index calculation; bit-serial offset-shifting; regfile serial access; accumulator correctness  
 
 
 ### Test Results
-```
-**************************************************************************************
-** TEST                          STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
-**************************************************************************************
-** tests.full.test_alu_ops        PASS     1650000.00           0.02   105090072.04  **
-** tests.full.test_imm_alu_ops    PASS     1660000.00           0.02   109800265.64  **
-** tests.full.test_shift_ops      PASS     1430000.00           0.01   114583144.98  **
-** tests.full.test_full           PASS     3730000.00           0.03   110191395.32  **
-**************************************************************************************
-** TESTS=4 PASS=4 FAIL=0 SKIP=0            8470000.00           0.11   76811446.55  **
-**************************************************************************************
-```
+
+#### tests.full.test_alu_ops  
+- **Status:** PASS  
+- **SIM Time:** 1 650 000 ns  
+- **Real Time:** 0.02 s  
+- **Ratio:** 1.05 x 10^8 ns/s  
+
+#### tests.full.test_imm_alu_ops  
+- **Status:** PASS  
+- **SIM Time:** 1 660 000 ns  
+- **Real Time:** 0.02 s  
+- **Ratio:** 1.10 x 10^8 ns/s  
+
+#### tests.full.test_shift_ops  
+- **Status:** PASS  
+- **SIM Time:** 1 430 000 ns  
+- **Real Time:** 0.01 s  
+- **Ratio:** 1.15 x 10^8 ns/s  
+
+#### tests.full.test_full  
+- **Status:** PASS  
+- **SIM Time:** 3 730 000 ns  
+- **Real Time:** 0.03 s  
+- **Ratio:** 1.10 x 10^8 ns/s  
+
+---
+
+- **TOTAL:** TESTS = 4, PASS = 4, FAIL = 0, SKIP = 0  
+- **Aggregate SIM Time:** 8 470 000 ns  
+- **Aggregate Real Time:** 0.11 s  
+- **Overall Ratio:** 7.68 x 10^7 ns/s  
