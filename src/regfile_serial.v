@@ -1,4 +1,4 @@
-// regfile_serial.v
+// regfile_serial.v - Serial-access register file
 
 `default_nettype none
 
@@ -35,7 +35,6 @@ module regfile_serial #(
         end else if (reg_shift_en) begin
             bit_index <= bit_index + 1; // increment bit index each cycle
         end else if (reg_store_en & rs1_addr != 3'b0) begin // do not write to 0 register
-            // todo: add parallel store from accumulator
             regs[rs1_addr] <= regs_parallel_in;
         end
     end
@@ -53,6 +52,5 @@ module regfile_serial #(
 
     assign regfile_bits = regs[rs1_addr];
 
-   // wire _unused = &{ena, clk, rst_n, 1'b0};
 
 endmodule

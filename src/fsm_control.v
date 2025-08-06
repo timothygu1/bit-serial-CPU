@@ -1,4 +1,4 @@
-// fsm_control.v - 
+// fsm_control.v - Finite State Machine control logic
 
 `default_nettype none
 
@@ -138,6 +138,5 @@ module fsm_control (
         endcase
     end
 
-    //wire _unused = &{imm_shift_en};
 
 endmodule

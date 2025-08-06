@@ -1,4 +1,4 @@
-// alu_1bit.v - 
+// alu_1bit.v - 1-bit serial ALU
 
 `default_nettype none
 

@@ -1,4 +1,4 @@
-// cpu_core.v - 
+// cpu_core.v - Bit-serial CPU core
 
 `default_nettype none
 
@@ -58,7 +58,6 @@ module cpu_core (
 
     /*      Module connections begin here      */
 
-    /* gate-level debug port */
     assign acc_dbg = acc_bits;
     
     // Addressable register file
