@@ -214,7 +214,7 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
 - Created the system block diagram and laid out module responsibilities
 - Wrote the test plan, identifying test cases for all instruction types and edge cases
 
-#### Datapath
+#### Code Development
 - Designed and implemented the bit-serial ALU and register file. This includes R vs I-type operand multiplexing, regfile addressing, and core arithmetic/logic ALU operations.
 - Developed timing/sequencing logic for shifting the final result into the accumulator
 
