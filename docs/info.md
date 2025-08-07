@@ -210,7 +210,7 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
 
 ### Tim G:
 #### Documentation & Planning
-- Defined opcodes, bit fields, and supported operations for both R-type and I-type instructions
+- Defined instruction set - opcodes, bit field layout, and supported operations for both R-type and I-type instructions
 - Created the system block diagram and laid out module responsibilities
 - Wrote the test plan, identifying test cases for all instruction types and edge cases
 
