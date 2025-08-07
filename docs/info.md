@@ -198,3 +198,28 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
 - **Aggregate SIM Time:** 8 470 000 ns  
 - **Aggregate Real Time:** 0.11 s  
 - **Overall Ratio:** 7.68 x 10^7 ns/s  
+
+## Project Duties & Contributions
+### Andrew W:
+- Initial design/planning of data pipeline, instruction width, other design considerations, etc.
+- Designed and implemented the finite state machine (FSM) for instruction decode and control sequencing
+- Created the Verilog module hierarchy
+- Designed top-level integration & module connections
+- Ran gate-level tests/simulation and maintained local hardening flow
+- Docs, etc.
+
+### Tim G:
+#### Documentation & Planning
+- Defined opcodes, bit fields, and supported operations for both R-type and I-type instructions
+- Created the system block diagram and laid out module responsibilities
+- Wrote the test plan, identifying test cases for all instruction types and edge cases
+
+#### Datapath
+- Designed and implemented the bit-serial ALU and register file. This includes R vs I-type operand multiplexing, regfile addressing, and core arithmetic/logic ALU operations.
+- Developed timing/sequencing logic for shifting the final result into the accumulator
+
+#### Testbench & Simulation
+- Wrote cocotb tests for each instruction category (ALU ops, shifts, immediates) and for full integration
+- Debugged and verified system functionality using gtkwave simulations
+
+
