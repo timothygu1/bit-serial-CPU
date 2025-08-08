@@ -107,12 +107,14 @@ module fsm_control (
     wire [2:0]  alu_decoded = decode_alu_op(opcode);
 
     // continuous assignments
-    assign alu_op       = alu_decoded;
-    assign alu_en       = do_calc;
-    assign alu_start    = (state == S_DECODE && !is_load && !is_store);
-    assign acc_load_en  = (state == S_DECODE && is_load);
-    assign reg_store_en = (state == S_DECODE && is_store);
-    assign reg_shift_en = (state == S_DECODE && !is_load && !is_store) || do_shift;
-    assign acc_write_en = do_shift || do_write;
+    always @(*) begin
+        alu_op       = alu_decoded;
+        alu_en       = do_calc;
+        alu_start    = (state == S_DECODE && !is_load && !is_store);
+        acc_load_en  = (state == S_DECODE && is_load);
+        reg_store_en = (state == S_DECODE && is_store);
+        reg_shift_en = (state == S_DECODE && !is_load && !is_store) || do_shift;
+        acc_write_en = do_shift || do_write;
+    end
 
 endmodule
