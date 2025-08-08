@@ -7,13 +7,17 @@ You can also include images in this folder and reference them in the markdown. E
 512 kb in size, and the combined size of all images must be less than 1 MB.
 -->
 
-## How it works
+## TinyTapeout 16-Bit-Serial CPU
+**Andrew Wang, Tim Gu**
 
 A bit-serial CPU processes one bit of a data word at a time using minimal logic - often reusing a small ALU and control unit across clock cycles. This is in contrast to a bit-parallel CPU, which processes entire data words (e.g., 8/16/32 bits) at once.
 
 Processing a single bit at a time instead of in parallel means that the CPU is much slower, but it can be made much smaller. This makes the bit-serial architecture very suitable for a submission to TinyTapeout in which a chip area of 160 x 100 um is one of the primary constraints.
 
 In this design, 16-bit width instructions are fed into the CPU over two clock cycles using the 8 TinyTapeout input signals. These instructions are decoded and the relevant operands (either immediates or stored values from a register file) are processed bit-serially from LSB to MSB and shifted into an accumulator register. The CPU supports parallel load operations to the accumulator and storing results from the accumulator to an addressable register file.
+
+## GDS Render
+<img width="2021" height="1550" alt="gds_render" src="https://github.com/user-attachments/assets/af303a02-cf40-4cd0-9aa9-7db6f32abe07" />
 
 ##  Functional Use (Instruction Loading)
 
@@ -147,23 +151,51 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
   - alu_1bit.v  
 - **Features:** Full FSM flow; end-to-end bit-serial execution; regfile store/load; instruction-decode logic  
 
-#### alu_ops.py  
+**Example**:
+- Operation: `LOADI 0x2D`
+- Expected result: `0x2D`
+<img width="1217" height="869" alt="image" src="https://github.com/user-attachments/assets/685b6ed6-9bf2-432a-b280-d606e5539934" />
+
+
+#### alu_ops.py
 - **Instructions:** ADD, SUB, AND, OR, XOR, LOADI, STORE  
 - **Strategy:** Loads fixed values into registers; runs R-type ALU instructions; checks accumulator result.  
 - **Modules:** fsm_control.v, cpu_core.v, regfile_serial.v, accumulator.v, alu_1bit.v  
-- **Features:** Bit-serial ALU correctness; regfile serial access; R-type decode; accumulator correctness  
+- **Features:** Bit-serial ALU correctness; regfile serial access; R-type decode; accumulator correctness
 
-#### imm_alu_ops.py  
+**Example**:
+- Setup: `R3` contains `0x73`, `R4` contains `0x2D`
+- Operation: `XOR R3, R4`
+- Expected result: `0x5E`
+<img width="1684" height="856" alt="image" src="https://github.com/user-attachments/assets/41db3e04-fcba-4719-9a9c-b11cd0cde3a1" />
+
+
+#### imm_alu_ops.py
 - **Instructions:** ADDI, SUBI, ANDI, ORI, XORI, LOADI, STORE  
 - **Strategy:** Sets known register values; executes I-type ops with immediates; checks accumulator output.  
 - **Modules:** fsm_control.v, cpu_core.v, regfile_serial.v, accumulator.v, alu_1bit.v  
 - **Features:** Immediate-decode logic; bit-serial ALU with immediate operand; regfile serial access; accumulator correctness  
+
+**Example**:
+- Setup: `R3` contains `0x73`, `R4` contains `0x2D`
+- Operation: `SUBI R3, 0x2C`
+- Expected result: `0x47`
+<img width="1684" height="901" alt="image" src="https://github.com/user-attachments/assets/f4138d6a-19f4-46eb-b4e2-71315d5c8499" />
+
+Note that in this case, the bits in the I-type instruction that correspond to the `rs2` address are a value of 4. However, the mux logic correctly selects the immediate bits for use in the ALU rather than using `R4` as the second operand.
 
 #### shift_ops.py  
 - **Instructions:** SLLI, SRLI, LOADI, STORE  
 - **Strategy:** Loads values into registers; shifts left/right by various immediates; checks accumulator.  
 - **Modules:** fsm_control.v, cpu_core.v, regfile_serial.v, accumulator.v  
 - **Features:** Shift-index calculation; bit-serial offset-shifting; regfile serial access; accumulator correctness  
+
+**Example**:
+- Setup: `R6` contains `0x12`
+- Operation: `SLLI R6, 0x02`
+- Expected result: `0x48`
+<img width="1717" height="888" alt="image" src="https://github.com/user-attachments/assets/9b64fd95-4092-4d5a-bcf6-ff4758816b37" />
+
 
 
 ### Test Results
@@ -202,8 +234,8 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
 ## Project Duties & Contributions
 ### Andrew W:
 - Initial planning and design bring-up of data pipeline, instruction width, and design considerations
-- Designed Verilog module hierarchy, top-level integration & module connections
-- Designed and implemented the finite state machine (FSM) for instruction decode and control sequencing
+- Designed Verilog module hierarchy, top-level integration & module connections in `top.v` and `cpu_core.v`
+- Designed and implemented the finite state machine (FSM) in `fsm_control.v` for instruction decode and control sequencing
 - Maintained local hardening workflow, comparing gate-level tests to GitHub CI jobs 
 - Debugged and fixed RTL flaws 
 - Documented high-level interfacing and low-level design process
@@ -215,8 +247,8 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
 - Wrote the test plan, identifying test cases for all instruction types and edge cases
 
 #### Code Development
-- Designed and implemented the bit-serial ALU and register file and core features required for integration of these modules. This includes R vs I-type operand multiplexing, regfile addressing, and serial arithmetic/logic operations.
-- Developed timing/sequencing logic for shifting the final result into the accumulator
+- Designed and implemented the bit-serial ALU and register file in `alu_1bit.v` and `regfile_serial.v` and developed the core features required for integration of these modules. This includes R vs I-type operand multiplexing, regfile addressing, and serial arithmetic/logic operations.
+- Developed timing/sequencing logic for shifting the final result into the accumulator in `accumulator.v`
 
 #### Testbench & Simulation
 - Wrote cocotb tests for each instruction category (ALU ops, shifts, immediates) and for full integration
