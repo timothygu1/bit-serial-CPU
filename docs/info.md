@@ -173,11 +173,12 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
 - **Features:** Immediate-decode logic; bit-serial ALU with immediate operand; regfile serial access; accumulator correctness  
 
 **Example**:
-- Setup: `R3` contains `0x73`
+- Setup: `R3` contains `0x73`, `R4` contains `0x2D`
 - Operation: `SUBI R3, 0x2C`
 - Expected result: `0x47`
 <img width="1684" height="901" alt="image" src="https://github.com/user-attachments/assets/f4138d6a-19f4-46eb-b4e2-71315d5c8499" />
 
+Note that in this case, the bits in the I-type instruction that correspond to the `rs2` address are a value of 4. However, the mux logic correctly selects the immediate bits for use in the ALU rather than using `R4` as the second operand.
 
 #### shift_ops.py  
 - **Instructions:** SLLI, SRLI, LOADI, STORE  
