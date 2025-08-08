@@ -73,7 +73,7 @@ module tt_um_cpu_top (
         .instr(instr),
         .btn_edge(btn_edge),
         .inst_done(inst_done),
-        .out_result(out_result),
+        .out_result(out_result)
     );
     assign uo_out = out_result;
     assign uio_out = 8'b0;
