@@ -28,6 +28,10 @@ module regfile_serial #(
     /*    Register file    */
     reg [REG_WIDTH-1:0] regs [0:REG_COUNT-1];
 
+    /* verilator lint_off UNUSED */
+    wire unused_instr3 = instr[3];
+    /* verilator lint_on UNUSED */
+
     integer i;
 
     always @(posedge clk) begin

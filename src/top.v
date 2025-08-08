@@ -65,8 +65,6 @@ module tt_um_cpu_top (
 
     wire [7:0] out_result;
 
-    wire [7:0] acc_dbg /* verilator lint_off UNUSEDSIGNAL */;
-
     // CPU core 
     cpu_core u_cpu_core (
         .clk(clk),
@@ -76,7 +74,6 @@ module tt_um_cpu_top (
         .btn_edge(btn_edge),
         .inst_done(inst_done),
         .out_result(out_result),
-        .acc_dbg(acc_dbg) // gate-level testing
     );
     assign uo_out = out_result;
     assign uio_out = 8'b0;
