@@ -202,8 +202,8 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
 ## Project Duties & Contributions
 ### Andrew W:
 - Initial planning and design bring-up of data pipeline, instruction width, and design considerations
-- Designed Verilog module hierarchy, top-level integration & module connections
-- Designed and implemented the finite state machine (FSM) for instruction decode and control sequencing
+- Designed Verilog module hierarchy, top-level integration & module connections in `top.v` and `cpu_core.v`
+- Designed and implemented the finite state machine (FSM) in `fsm_control.v` for instruction decode and control sequencing
 - Maintained local hardening workflow, comparing gate-level tests to GitHub CI jobs 
 - Debugged and fixed RTL flaws 
 - Documented high-level interfacing and low-level design process
@@ -215,8 +215,8 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
 - Wrote the test plan, identifying test cases for all instruction types and edge cases
 
 #### Code Development
-- Designed and implemented the bit-serial ALU and register file and core features required for integration of these modules. This includes R vs I-type operand multiplexing, regfile addressing, and serial arithmetic/logic operations.
-- Developed timing/sequencing logic for shifting the final result into the accumulator
+- Designed and implemented the bit-serial ALU and register file in `alu_1bit.v` and `regfile_serial.v` and developed the core features required for integration of these modules. This includes R vs I-type operand multiplexing, regfile addressing, and serial arithmetic/logic operations.
+- Developed timing/sequencing logic for shifting the final result into the accumulator in `accumulator.v`
 
 #### Testbench & Simulation
 - Wrote cocotb tests for each instruction category (ALU ops, shifts, immediates) and for full integration
