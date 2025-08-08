@@ -147,23 +147,50 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
   - alu_1bit.v  
 - **Features:** Full FSM flow; end-to-end bit-serial execution; regfile store/load; instruction-decode logic  
 
-#### alu_ops.py  
+**Example**:
+- Operation: `LOADI 0x2D`
+- Expected result: `0x2D`
+<img width="1217" height="869" alt="image" src="https://github.com/user-attachments/assets/685b6ed6-9bf2-432a-b280-d606e5539934" />
+
+
+#### alu_ops.py
 - **Instructions:** ADD, SUB, AND, OR, XOR, LOADI, STORE  
 - **Strategy:** Loads fixed values into registers; runs R-type ALU instructions; checks accumulator result.  
 - **Modules:** fsm_control.v, cpu_core.v, regfile_serial.v, accumulator.v, alu_1bit.v  
-- **Features:** Bit-serial ALU correctness; regfile serial access; R-type decode; accumulator correctness  
+- **Features:** Bit-serial ALU correctness; regfile serial access; R-type decode; accumulator correctness
 
-#### imm_alu_ops.py  
+**Example**:
+- Setup: `R3` contains `0x73`, `R4` contains `0x2D`
+- Operation: `XOR R3, R4`
+- Expected result: `0x5E`
+<img width="1684" height="856" alt="image" src="https://github.com/user-attachments/assets/41db3e04-fcba-4719-9a9c-b11cd0cde3a1" />
+
+
+#### imm_alu_ops.py
 - **Instructions:** ADDI, SUBI, ANDI, ORI, XORI, LOADI, STORE  
 - **Strategy:** Sets known register values; executes I-type ops with immediates; checks accumulator output.  
 - **Modules:** fsm_control.v, cpu_core.v, regfile_serial.v, accumulator.v, alu_1bit.v  
 - **Features:** Immediate-decode logic; bit-serial ALU with immediate operand; regfile serial access; accumulator correctness  
+
+**Example**:
+- Setup: `R3` contains `0x73`
+- Operation: `SUBI R3, 0x2C`
+- Expected result: `0x47`
+<img width="1684" height="901" alt="image" src="https://github.com/user-attachments/assets/f4138d6a-19f4-46eb-b4e2-71315d5c8499" />
+
 
 #### shift_ops.py  
 - **Instructions:** SLLI, SRLI, LOADI, STORE  
 - **Strategy:** Loads values into registers; shifts left/right by various immediates; checks accumulator.  
 - **Modules:** fsm_control.v, cpu_core.v, regfile_serial.v, accumulator.v  
 - **Features:** Shift-index calculation; bit-serial offset-shifting; regfile serial access; accumulator correctness  
+
+**Example**:
+- Setup: `R6` contains `0x12`
+- Operation: `SLLI R6, 0x02`
+- Expected result: `0x48`
+<img width="1717" height="888" alt="image" src="https://github.com/user-attachments/assets/9b64fd95-4092-4d5a-bcf6-ff4758816b37" />
+
 
 
 ### Test Results
