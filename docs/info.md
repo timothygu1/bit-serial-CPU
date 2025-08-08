@@ -7,13 +7,17 @@ You can also include images in this folder and reference them in the markdown. E
 512 kb in size, and the combined size of all images must be less than 1 MB.
 -->
 
-## How it works
+## TinyTapeout 16-Bit-Serial CPU
+### Andrew Wang, Tim Gu
 
 A bit-serial CPU processes one bit of a data word at a time using minimal logic - often reusing a small ALU and control unit across clock cycles. This is in contrast to a bit-parallel CPU, which processes entire data words (e.g., 8/16/32 bits) at once.
 
 Processing a single bit at a time instead of in parallel means that the CPU is much slower, but it can be made much smaller. This makes the bit-serial architecture very suitable for a submission to TinyTapeout in which a chip area of 160 x 100 um is one of the primary constraints.
 
 In this design, 16-bit width instructions are fed into the CPU over two clock cycles using the 8 TinyTapeout input signals. These instructions are decoded and the relevant operands (either immediates or stored values from a register file) are processed bit-serially from LSB to MSB and shifted into an accumulator register. The CPU supports parallel load operations to the accumulator and storing results from the accumulator to an addressable register file.
+
+## GDS Render
+<img width="2021" height="1550" alt="gds_render" src="https://github.com/user-attachments/assets/af303a02-cf40-4cd0-9aa9-7db6f32abe07" />
 
 ##  Functional Use (Instruction Loading)
 
