@@ -201,12 +201,12 @@ A cocoTB testbench is used to run tests in Python. Each test uses the following 
 
 ## Project Duties & Contributions
 ### Andrew W:
-- Initial design/planning of data pipeline, instruction width, other design considerations, etc.
+- Initial planning and design bring-up of data pipeline, instruction width, and design considerations
+- Designed Verilog module hierarchy, top-level integration & module connections
 - Designed and implemented the finite state machine (FSM) for instruction decode and control sequencing
-- Created the Verilog module hierarchy
-- Designed top-level integration & module connections
-- Ran gate-level tests/simulation and maintained local hardening flow
-- Docs, etc.
+- Maintained local hardening workflow, comparing gate-level tests to GitHub CI jobs 
+- Debugged and fixed RTL flaws 
+- Documented high-level interfacing and low-level design process
 
 ### Tim G:
 #### Documentation & Planning
