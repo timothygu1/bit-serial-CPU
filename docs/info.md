@@ -82,17 +82,17 @@ An edge-detected pushbutton (connected via `uio_in[0]`) triggers instruction loa
 #### Control FSM
 The `fsm_control` module orchestrates datapath sequencing using a 5-state FSM:
 
-1. `S_IDLE`: Waits for button press and valid instruction
+1. `S_IDLE = 0x0`: Waits for button press and valid instruction
 
-2. `S_DECODE`: Decodes opcode, issues control signals for load/store/ALU
+2. `S_DECODE = 0x1`: Decodes opcode, issues control signals for load/store/ALU
 
-3. `S_SHIFT_REGS`: Performs serial operations; enables register shifting and accumulator writes
+3. `S_SHIFT_REGS = 0x2`: Performs serial operations; enables register shifting and accumulator writes
 
-4. `S_WRITE_ACC`: Special case state for direct writes (not commonly used)
+4. `S_WRITE_ACC = 0x3`: Special case state for direct writes (not commonly used)
 
-5. `S_OUTPUT`: Signals end of execution and enables writing to output LEDs
+5. `S_OUTPUT = 0x4`: Signals end of execution and enables writing to output LEDs
 
-The FSM generates control signals including  `reg_shift_en`, `acc_write_en`, `alu_start`, `alu_op`, and `out_e`n based on instruction type.
+The FSM generates control signals including  `reg_shift_en`, `acc_write_en`, `alu_start`, `alu_op`, and `out_en` based on instruction type.
 
 #### Register File
 The regfile_serial module implements an 8x8 register file, where each register is 8 bits wide. It supports:
