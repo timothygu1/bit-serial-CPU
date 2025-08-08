@@ -8,7 +8,7 @@ You can also include images in this folder and reference them in the markdown. E
 -->
 
 ## TinyTapeout 16-Bit-Serial CPU
-### Andrew Wang, Tim Gu
+**Andrew Wang, Tim Gu**
 
 A bit-serial CPU processes one bit of a data word at a time using minimal logic - often reusing a small ALU and control unit across clock cycles. This is in contrast to a bit-parallel CPU, which processes entire data words (e.g., 8/16/32 bits) at once.
 
