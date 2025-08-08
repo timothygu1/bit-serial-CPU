@@ -11,7 +11,7 @@ module cpu_core (
     input  wire [11:0] instr,
     input  wire        inst_done,
     input  wire        btn_edge,
-    output reg  [7:0]  out_result,
+    output reg  [7:0]  out_result
 
 );
 
